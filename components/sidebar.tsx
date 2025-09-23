@@ -3,7 +3,6 @@ import {
   Box, 
   BookOpen, 
   Settings, 
-  Hash, 
   ChevronRight,
   Building2
 } from "lucide-react"

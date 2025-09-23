@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const connection = await getConnection();
-    const [rows]: Record<string, any>[] = await connection.execute(
+    const [rows] = await connection.execute(
       "SELECT * FROM admins WHERE username = ?",
       [username]
-    );
+    ) as [{ id: number; username: string; password: string }[], unknown];
 
     if (rows.length === 0) {
       return NextResponse.json(
