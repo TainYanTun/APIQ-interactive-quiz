@@ -1,33 +1,49 @@
-import { getConnection } from '@/utils/db';
-import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcrypt';
+import { getConnection } from "@/utils/db";
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcrypt";
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
 
+  if (!username || !password) {
+    return NextResponse.json(
+      { message: "Username and password are required" },
+      { status: 400 }
+    );
+  }
+
   try {
     const connection = await getConnection();
-    const [rows] = await connection.execute(
-      'SELECT * FROM admins WHERE username = ?',
+    const [rows]: Record<string, any>[] = await connection.execute(
+      "SELECT * FROM admins WHERE username = ?",
       [username]
     );
 
-    // @ts-expect-error: Type check
-    if (rows.length > 0) {
-      // @ts-expect-error: Type check
-      const user = rows[0];
-      const passwordMatch = await bcrypt.compare(password, user.password);
-
-      if (passwordMatch) {
-        return NextResponse.json({ success: true });
-      } else {
-        return NextResponse.json({ success: false, message: 'Invalid username or password' });
-      }
-    } else {
-      return NextResponse.json({ success: false, message: 'Invalid username or password' });
+    if (rows.length === 0) {
+      return NextResponse.json(
+        { message: "Invalid username or password" },
+        { status: 401 }
+      );
     }
+
+    const user = rows[0];
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return NextResponse.json(
+        { message: "Invalid username or password" },
+        { status: 401 }
+      );
+    }
+
+    // Here you would typically create a session and return a token
+    // For now, we'll just return a success message
+    return NextResponse.json({ message: "Login successful" });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ success: false, message: 'An error occurred' });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

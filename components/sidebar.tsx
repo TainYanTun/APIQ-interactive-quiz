@@ -46,20 +46,6 @@ const platformItems = [
   },
 ]
 
-// Project items
-const projectItems = [
-  {
-    title: "Student Management",
-    url: "/admin/studentmag",
-    icon: Hash,
-  },
-  {
-    title: "Reports & Analytics",
-    url: "/admin/reports",
-    icon: Hash,
-  },
-]
-
 export function AppSidebar() {
   return (
     <Sidebar className="bg-white text-gray-900">
