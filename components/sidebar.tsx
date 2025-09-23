@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Building2
 } from "lucide-react"
+import Link from "next/link"
 
 import {
   Sidebar,
@@ -24,23 +25,23 @@ import {
 // Platform items
 const platformItems = [
   {
-    title: "Playground",
-    url: "#",
+    title: "Dashboard",
+    url: "/admin/dashboard",
     icon: Play,
   },
   {
-    title: "Models",
-    url: "#",
+    title: "Questions",
+    url: "/admin/questions",
     icon: Box,
   },
   {
-    title: "Documentation",
-    url: "#",
+    title: "Sessions",
+    url: "/admin/sessions",
     icon: BookOpen,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/admin/settings",
     icon: Settings,
   },
 ]
@@ -48,13 +49,13 @@ const platformItems = [
 // Project items
 const projectItems = [
   {
-    title: "Design Engineering",
-    url: "#",
+    title: "Student Management",
+    url: "/admin/studentmag",
     icon: Hash,
   },
   {
-    title: "Sales & Marketing",
-    url: "#",
+    title: "Reports & Analytics",
+    url: "/admin/reports",
     icon: Hash,
   },
 ]
@@ -68,8 +69,8 @@ export function AppSidebar() {
             <Building2 className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="font-semibold text-gray-900">Acme Inc</div>
-            <div className="text-sm text-gray-600">Enterprise</div>
+            <div className="font-semibold text-gray-900">QUIZ APP</div>
+            <div className="text-sm text-gray-600">Asia-Pacific International University</div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-600 ml-auto" />
         </div>
@@ -85,11 +86,11 @@ export function AppSidebar() {
               {platformItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="hover:bg-gray-100 text-gray-700 hover:text-gray-900">
-                    <a href={item.url} className="flex items-center gap-2 px-2 py-2">
+                    <Link href={item.url} className="flex items-center gap-2 px-2 py-2">
                       <item.icon className="w-4 h-4" />
                       <span>{item.title}</span>
                       <ChevronRight className="w-4 h-4 ml-auto" />
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -97,25 +98,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className="text-gray-600 text-sm font-medium mb-2">
-            Projects
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {projectItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="hover:bg-gray-100 text-gray-700 hover:text-gray-900">
-                    <a href={item.url} className="flex items-center gap-2 px-2 py-2">
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4">
@@ -124,7 +106,7 @@ export function AppSidebar() {
             <span className="text-white text-sm font-semibold">S</span>
           </div>
           <div className="flex-1">
-            <div className="font-medium text-gray-900">shadcn</div>
+            <div className="font-medium text-gray-900">admin</div>
             <div className="text-sm text-gray-600">m@example.com</div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-600" />
