@@ -4,7 +4,8 @@ import {
   BookOpen, 
   Settings, 
   ChevronRight,
-  Building2
+  Building2,
+  PersonStandingIcon
 } from "lucide-react"
 import Link from "next/link"
 
@@ -37,6 +38,10 @@ const platformItems = [
     title: "Sessions",
     url: "/admin/sessions",
     icon: BookOpen,
+  },
+  { title: "Students",
+    url: "/admin/studentmag",
+    icon: PersonStandingIcon
   },
   {
     title: "Settings",
