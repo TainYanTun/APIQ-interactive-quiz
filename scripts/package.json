@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "populate-questions": "node scripts/populate-questions.js",
+    "clear-questions": "node scripts/clear-questions.js"
+  }
+}
