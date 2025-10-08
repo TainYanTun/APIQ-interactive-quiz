@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Session {
   id: string;
@@ -12,6 +13,7 @@ export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [qrCodeValue, setQrCodeValue] = useState<string | null>(null);
 
   async function fetchSessions() {
     try {
@@ -56,6 +58,15 @@ export default function SessionsPage() {
       alert(`Failed to create session: ${(err as Error).message}`);
       console.error('Error creating session:', err);
     }
+  };
+
+  const showQrCode = (sessionId: string) => {
+    const url = `${window.location.origin}/join?session_id=${sessionId}`;
+    setQrCodeValue(url);
+  };
+
+  const closeModal = () => {
+    setQrCodeValue(null);
   };
 
   return (
@@ -103,9 +114,13 @@ export default function SessionsPage() {
                         {session.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {/* Add actions here, e.g., view participants, deactivate session */}
-                      <button className="text-indigo-600 hover:text-indigo-900">Manage</button>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      {session.is_active && (
+                        <button onClick={() => showQrCode(session.id)} className="text-indigo-600 hover:text-indigo-900">
+                          Show QR
+                        </button>
+                      )}
+                      <button className="text-gray-500 hover:text-gray-700">Manage</button>
                     </td>
                   </tr>
                 ))}
@@ -114,6 +129,19 @@ export default function SessionsPage() {
           )}
         </div>
       </div>
+
+      {qrCodeValue && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeModal}>
+          <div className="bg-white p-8 rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-center mb-4">Scan to Join Session</h3>
+            <QRCodeSVG value={qrCodeValue} size={256} />
+            <p className="mt-4 text-center text-gray-600 break-all">{qrCodeValue}</p>
+            <button onClick={closeModal} className="mt-6 w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
