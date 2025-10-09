@@ -36,10 +36,9 @@ export async function POST(req: NextRequest) {
     )) as [{ id: number; student_id: string }[], unknown];
 
     if (studentRows.length === 0) {
-      // If student does not exist, create a new one
-      await connection.execute(
-        "INSERT INTO students (student_id, name) VALUES (?, ?)",
-        [student_id, student_id]
+      return NextResponse.json(
+        { message: "Student ID not recognized. Please contact your administrator." },
+        { status: 403 } // Forbidden
       );
     }
 
