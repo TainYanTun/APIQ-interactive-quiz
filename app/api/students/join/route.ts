@@ -36,17 +36,26 @@ export async function POST(req: NextRequest) {
     )) as [{ id: number; student_id: string }[], unknown];
 
     if (studentRows.length === 0) {
-      return NextResponse.json(
-        { message: "Student not found" },
-        { status: 404 }
+      // If student does not exist, create a new one
+      await connection.execute(
+        "INSERT INTO students (student_id, name) VALUES (?, ?)",
+        [student_id, student_id]
       );
     }
 
-    // Add student to session_participants
-    await connection.execute(
-      "INSERT INTO session_participants (student_id, session_id) VALUES (?, ?)",
+    // Check if student is already a participant
+    const [participantRows] = (await connection.execute(
+      "SELECT * FROM session_participants WHERE student_id = ? AND session_id = ?",
       [student_id, session_id]
-    );
+    )) as [{ student_id: string; session_id: string }[], unknown];
+
+    if (participantRows.length === 0) {
+      // Add student to session_participants
+      await connection.execute(
+        "INSERT INTO session_participants (student_id, session_id) VALUES (?, ?)",
+        [student_id, session_id]
+      );
+    }
 
     // Create a new session for the student
     const newSessionId = randomUUID();
@@ -59,13 +68,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Joined session successfully" });
   } catch (error) {
     console.error(error);
-    // Check for duplicate entry
-    if ((error as any).code === "ER_DUP_ENTRY") {
-      return NextResponse.json(
-        { message: "Student already in session" },
-        { status: 409 }
-      );
-    }
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
