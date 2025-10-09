@@ -88,6 +88,32 @@ export default function SessionsPage() {
     }
   };
 
+  const handleDelete = async (sessionId: string) => {
+    if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/sessions/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete session');
+      }
+
+      fetchSessions(); // Refetch to update the UI
+    } catch (err) {
+      alert(`Failed to delete session: ${(err as Error).message}`);
+      console.error('Error deleting session:', err);
+    }
+  };
+
   const showQrCode = (sessionId: string) => {
     const url = `${window.location.origin}/join?session_id=${sessionId}`;
     setQrCodeValue(url);
@@ -115,9 +141,9 @@ export default function SessionsPage() {
           {sessions.length === 0 ? (
             <p className="text-gray-500">No sessions created yet.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-4">
               {sessions.map((session) => (
-                <SessionCard key={session.id} session={session} onShowQr={showQrCode} onToggleActive={handleToggleActive} />
+                <SessionCard key={session.id} session={session} onShowQr={showQrCode} onToggleActive={handleToggleActive} onDelete={handleDelete} />
               ))}
             </div>
           )}
