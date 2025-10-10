@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface Score {
   student_id: string;
@@ -18,21 +17,27 @@ export default function Scoreboard({ sessionId }: ScoreboardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchScores() {
-    // This is a placeholder. In a real application, you would fetch scores from your backend.
-    // For now, we'll use some dummy data.
-    const dummyScores: Score[] = [
-      { student_id: '1', name: 'Alice', score: 100 },
-      { student_id: '2', name: 'Bob', score: 80 },
-      { student_id: '3', name: 'Charlie', score: 120 },
-    ];
-    setScores(dummyScores);
-    setLoading(false);
-  }
+  const fetchScores = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/sessions/${sessionId}/scores`); // Assuming this API exists
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Error: ${response.status} - ${errorData.message || response.statusText}`);
+      }
+      const data: Score[] = await response.json();
+      setScores(data);
+    } catch (err) {
+      setError((err as Error).message);
+      console.error('Failed to fetch scores:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId, setLoading, setError, setScores]);
 
   useEffect(() => {
     fetchScores();
-  }, [sessionId]);
+  }, [sessionId, fetchScores]);
 
   return (
     <div className="space-y-4">
@@ -40,7 +45,7 @@ export default function Scoreboard({ sessionId }: ScoreboardProps) {
       {loading ? (
         <p>Loading scores...</p>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500">Error: {error}</p>
       ) : (
         <div className="border rounded-md">
           <table className="min-w-full divide-y divide-gray-200">
@@ -52,7 +57,7 @@ export default function Scoreboard({ sessionId }: ScoreboardProps) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {scores.sort((a, b) => b.score - a.score).map((score, index) => (
+              {(Array.isArray(scores) ? [...scores] : []).sort((a, b) => b.score - a.score).map((score, index) => (
                 <tr key={score.student_id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{score.name}</td>

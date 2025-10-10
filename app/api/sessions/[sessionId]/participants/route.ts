@@ -1,11 +1,16 @@
 import { getConnection } from "@/utils/db";
 import { NextRequest, NextResponse } from "next/server";
 
+interface Participant {
+  student_id: string;
+  name: string;
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { sessionId: string } }
 ) {
-  const { sessionId } = params;
+  const { sessionId } = await params;
 
   if (!sessionId) {
     return NextResponse.json(
@@ -22,13 +27,13 @@ export async function GET(
        JOIN session_participants sp ON s.student_id = sp.student_id
        WHERE sp.session_id = ?`,
       [sessionId]
-    )) as any[];
+    )) as Participant[];
 
     return NextResponse.json(participants);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: (error as Error).message },
       { status: 500 }
     );
   }

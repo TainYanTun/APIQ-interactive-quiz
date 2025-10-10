@@ -138,7 +138,11 @@ export default function SessionsPage() {
           </button>
         </div>
         <div className="p-6">
-          {sessions.length === 0 ? (
+          {loading ? (
+            <p>Loading sessions...</p>
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : sessions.length === 0 ? (
             <p className="text-gray-500">No sessions created yet.</p>
           ) : (
             <div className="flex flex-col gap-4">

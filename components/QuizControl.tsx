@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface Question {
@@ -27,10 +27,10 @@ export default function QuizControl({ sessionId }: QuizControlProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchQuestions() {
+  const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/questions');
+      const response = await fetch(`/api/sessions/${sessionId}/questions`);
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
@@ -42,11 +42,11 @@ export default function QuizControl({ sessionId }: QuizControlProps) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [sessionId, setLoading, setError, setQuestions]);
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
+  }, [sessionId, fetchQuestions]); // Add sessionId to dependency array
 
   const handleQuestionSelect = (questionId: string) => {
     const question = questions.find(q => q.question_id === parseInt(questionId));
@@ -78,11 +78,15 @@ export default function QuizControl({ sessionId }: QuizControlProps) {
               disabled={loading}
             >
               <option value="">{loading ? 'Loading...' : 'Select a question'}</option>
-              {questions.map((question) => (
-                <option key={question.question_id} value={question.question_id}>
-                  {question.text}
-                </option>
-              ))}
+              {error ? (
+                <option value="" disabled>Error loading questions</option>
+              ) : (
+                questions.map((question) => (
+                  <option key={question.question_id} value={question.question_id}>
+                    {question.text}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 

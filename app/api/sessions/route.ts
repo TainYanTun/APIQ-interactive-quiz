@@ -1,8 +1,8 @@
 import { getConnection } from "@/utils/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const sessionData = await getSession();
   const isAdmin = sessionData?.isAdmin;
 

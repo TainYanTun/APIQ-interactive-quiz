@@ -1,6 +1,7 @@
 import { getConnection } from '@/utils/db';
 import { z } from 'zod';
 import { successResponse, errorResponse } from '@/lib/apiResponse';
+import { ResultSetHeader } from 'mysql2';
 
 // Define a schema for the expected update input
 const updateQuestionSchema = z.object({
@@ -62,7 +63,7 @@ export async function PUT(req: Request) {
     );
     
     // Check if any row was actually updated
-    if ((result as any).affectedRows === 0) {
+    if ((result as ResultSetHeader).affectedRows === 0) {
       return errorResponse('Question not found or no changes made', 404);
     }
 

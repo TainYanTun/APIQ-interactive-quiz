@@ -59,7 +59,30 @@ CREATE TABLE IF NOT EXISTS questions_bank (
     is_active TINYINT(1) DEFAULT 1
 );
 
--- 7. admins
+-- 7. session_questions
+CREATE TABLE IF NOT EXISTS session_questions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    session_id VARCHAR(50) NOT NULL,
+    question_id INT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES questions_bank(id) ON DELETE CASCADE,
+    UNIQUE(session_id, question_id)
+);
+
+-- 8. question_scores
+CREATE TABLE IF NOT EXISTS question_scores (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id VARCHAR(50) NOT NULL,
+    session_id VARCHAR(50) NOT NULL,
+    question_id INT NOT NULL,
+    score INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    FOREIGN KEY (question_id) REFERENCES questions_bank(id),
+    UNIQUE(student_id, session_id, question_id)
+);
+
 CREATE TABLE IF NOT EXISTS admins (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,

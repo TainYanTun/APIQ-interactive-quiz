@@ -1,6 +1,7 @@
 import { getConnection } from '@/utils/db';
 import { z } from 'zod';
 import { successResponse, errorResponse } from '@/lib/apiResponse';
+import { ResultSetHeader } from 'mysql2';
 
 // Define a schema for the expected input
 const deleteQuestionSchema = z.object({
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
     const [result] = await connection.execute('UPDATE questions_bank SET is_active = 0 WHERE id = ?', [id]);
     
     // Check if any row was actually updated
-    if ((result as any).affectedRows === 0) {
+    if ((result as ResultSetHeader).affectedRows === 0) {
       return errorResponse('Question not found or already deleted', 404);
     }
 

@@ -1,6 +1,7 @@
 import { getConnection } from '@/utils/db';
 import { z } from 'zod';
 import { successResponse, errorResponse } from '@/lib/apiResponse';
+import { ResultSetHeader } from 'mysql2';
 
 // Define a schema for the expected input
 const activateStudentSchema = z.object({
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
     const [result] = await connection.execute('UPDATE students SET is_active = 1 WHERE id = ?', [id]);
     
     // Check if any row was actually updated
-    if ((result as any).affectedRows === 0) {
+    if ((result as ResultSetHeader).affectedRows === 0) {
       return errorResponse('Student not found or already active', 404);
     }
 
@@ -40,3 +41,4 @@ export async function POST(req: Request) {
     return errorResponse('Internal server error', 500);
   }
 }
+

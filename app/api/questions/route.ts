@@ -1,5 +1,4 @@
 import { getConnection } from '@/utils/db';
-import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { successResponse, errorResponse } from '@/lib/apiResponse';
 

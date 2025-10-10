@@ -1,9 +1,9 @@
 import { getConnection } from "@/utils/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { randomBytes } from "crypto";
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   const sessionData = await getSession();
   const isAdmin = sessionData?.isAdmin;
 
