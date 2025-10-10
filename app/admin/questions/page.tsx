@@ -45,9 +45,22 @@ export default function QuestionsPage() {
       ? '/api/questions' 
       : `/api/questions?category=${encodeURIComponent(selectedCategory)}`;
     
-    const res = await fetch(url);
-    const data = await res.json();
-    setQuestions(data);
+    try {
+      const res = await fetch(url);
+      const responseData = await res.json();
+
+      if (res.ok) {
+        setQuestions(responseData.data || []); // Access the 'data' property
+      } else {
+        console.error('Error fetching questions:', responseData);
+        setQuestions([]); // Ensure questions is an empty array on error
+        alert(`Failed to fetch questions: ${responseData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Network or parsing error fetching questions:', error);
+      setQuestions([]); // Ensure questions is an empty array on network/parsing error
+      alert('Failed to fetch questions due to a network error.');
+    }
   }, [selectedCategory]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface Student {
   id: number;
@@ -8,6 +8,7 @@ interface Student {
   name: string;
   department: string;
   image_url: string;
+  is_active: number; // Added is_active property
 }
 
 interface Department {
@@ -20,12 +21,35 @@ export default function StudentManagementPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newStudent, setNewStudent] = useState({ student_id: '', name: '', department_id: '' });
+  const [filterStatus, setFilterStatus] = useState<'active' | 'inactive' | 'all'>('active'); // New state for filter
 
-  async function fetchStudents() {
-    const res = await fetch('/api/students');
-    const data = await res.json();
-    setStudents(data);
-  }
+  const fetchStudents = useCallback(async () => {
+    try {
+      let url = '/api/students';
+      if (filterStatus === 'active') {
+        url += '?is_active=1';
+      } else if (filterStatus === 'inactive') {
+        url += '?is_active=0';
+      } else if (filterStatus === 'all') {
+        url += '?is_active=all'; // Backend will ignore this or handle it as 'all'
+      }
+
+      const res = await fetch(url);
+      const responseData = await res.json();
+
+      if (res.ok) {
+        setStudents(responseData.data || []);
+      } else {
+        console.error('Error fetching students:', responseData);
+        setStudents([]);
+        alert(`Failed to fetch students: ${responseData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Network or parsing error fetching students:', error);
+      setStudents([]);
+      alert('Failed to fetch students due to a network error.');
+    }
+  }, [filterStatus]); // Re-fetch when filterStatus changes
 
   async function fetchDepartments() {
     const res = await fetch('/api/departments');
@@ -36,18 +60,66 @@ export default function StudentManagementPage() {
   useEffect(() => {
     fetchStudents();
     fetchDepartments();
-  }, []);
+  }, [fetchStudents]);
 
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this student?')) {
-      const res = await fetch('/api/students/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
+      try {
+        const res = await fetch('/api/students/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
 
-      if (res.ok) {
-        fetchStudents();
+        if (res.ok) {
+          fetchStudents();
+        } else {
+          const errorResponse = await res.json();
+          console.error('Error deleting student:', errorResponse);
+          let errorMessage = `Failed to delete student: ${errorResponse.message || 'Unknown error'}`;
+
+          if (errorResponse.errors) {
+            const fieldErrors = Object.values(errorResponse.errors).flat();
+            if (fieldErrors.length > 0) {
+              errorMessage += `\nDetails: ${fieldErrors.join(', ')}`;
+            }
+          }
+          alert(errorMessage);
+        }
+      } catch (error) {
+        console.error('Network or parsing error deleting student:', error);
+        alert('Failed to delete student due to a network error.');
+      }
+    }
+  };
+
+  const handleActivate = async (id: number) => {
+    if (confirm('Are you sure you want to activate this student?')) {
+      try {
+        const res = await fetch('/api/students/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
+
+        if (res.ok) {
+          fetchStudents();
+        } else {
+          const errorResponse = await res.json();
+          console.error('Error activating student:', errorResponse);
+          let errorMessage = `Failed to activate student: ${errorResponse.message || 'Unknown error'}`;
+
+          if (errorResponse.errors) {
+            const fieldErrors = Object.values(errorResponse.errors).flat();
+            if (fieldErrors.length > 0) {
+              errorMessage += `\nDetails: ${fieldErrors.join(', ')}`;
+            }
+          }
+          alert(errorMessage);
+        }
+      } catch (error) {
+        console.error('Network or parsing error activating student:', error);
+        alert('Failed to activate student due to a network error.');
       }
     }
   };
@@ -58,11 +130,17 @@ export default function StudentManagementPage() {
       alert('Please select a department.');
       return;
     }
-    console.log('Adding student:', newStudent);
+
+    const studentDataToSend = {
+      ...newStudent,
+      department_id: parseInt(newStudent.department_id, 10), // Convert to number
+    };
+
+    console.log('Adding student:', studentDataToSend);
     const res = await fetch('/api/students/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newStudent),
+      body: JSON.stringify(studentDataToSend),
     });
 
     if (res.ok) {
@@ -70,12 +148,19 @@ export default function StudentManagementPage() {
       setShowModal(false);
       setNewStudent({ student_id: '', name: '', department_id: '' });
     } else {
-      const error = await res.json();
-      console.error('Error adding student:', error);
-      alert(`Failed to add student: ${error.message}`);
+      const errorResponse = await res.json();
+      console.error('Error adding student:', errorResponse);
+      let errorMessage = `Failed to add student: ${errorResponse.message || 'Unknown error'}`;
+
+      if (errorResponse.errors) {
+        const fieldErrors = Object.values(errorResponse.errors).flat();
+        if (fieldErrors.length > 0) {
+          errorMessage += `\nDetails: ${fieldErrors.join(', ')}`;
+        }
+      }
+      alert(errorMessage);
     }
   };
-
   return (
     <div className="space-y-6">
       <div>
@@ -85,8 +170,20 @@ export default function StudentManagementPage() {
 
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="p-6 border-b flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900">Student Database</h2>
-          <button onClick={() => setShowModal(true)} className="bg-blue-500 text-white px-4 py-2 rounded-md">Create Student</button>
+          <div className="flex items-center space-x-4">
+            <h2 className="text-xl font-semibold text-gray-900">Student Database</h2>
+            {/* Filter for active/inactive students */}
+            <select 
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as 'active' | 'inactive' | 'all')}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="active">Active Students</option>
+              <option value="inactive">Inactive Students</option>
+              <option value="all">All Students</option>
+            </select>
+          </div>
+          <button onClick={() => setShowModal(true)} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Create Student</button>
         </div>
         <div className="p-6">
           <table className="min-w-full divide-y divide-gray-200">
@@ -101,6 +198,9 @@ export default function StudentManagementPage() {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Department
                 </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
                 <th scope="col" className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -108,14 +208,23 @@ export default function StudentManagementPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {students.map((student) => (
-                <tr key={student.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.student_id}</td>
+                <tr key={student.id} className={student.is_active === 0 ? 'bg-gray-50 text-gray-500' : ''}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.student_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.department}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleDelete(student.id)} className="ml-4 text-red-600 hover:text-red-900">Delete</button>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      student.is_active === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {student.is_active === 1 ? 'Active' : 'Inactive'}
+                    </span>
                   </td>
-                </tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    {student.is_active === 1 ? (
+                      <button onClick={() => handleDelete(student.id)} className="ml-4 text-red-600 hover:text-red-900">Deactivate</button>
+                    ) : (
+                      <button onClick={() => handleActivate(student.id)} className="ml-4 text-green-600 hover:text-green-900">Activate</button>
+                    )}
+                  </td></tr>
               ))}
             </tbody>
           </table>

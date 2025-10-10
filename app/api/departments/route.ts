@@ -1,14 +1,13 @@
-
 import { getConnection } from '@/utils/db';
-import { NextResponse } from 'next/server';
+import { successResponse, errorResponse } from '@/lib/apiResponse';
 
 export async function GET() {
   try {
     const connection = await getConnection();
     const [rows] = await connection.execute('SELECT * FROM departments');
-    return NextResponse.json(rows);
+    return successResponse(rows, 'Departments fetched successfully');
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching departments:', error);
+    return errorResponse('Internal server error', 500);
   }
 }

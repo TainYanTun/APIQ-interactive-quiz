@@ -1,59 +1,57 @@
 import { getConnection } from "@/utils/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import bcrypt from "bcrypt";
 import { setSession } from "@/lib/session";
 import { randomBytes } from "crypto";
+import { successResponse, errorResponse } from '@/lib/apiResponse';
+import { z } from 'zod';
+
+// Define a schema for the expected login input
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
 
 export async function POST(req: NextRequest) {
-  const { username, password } = await req.json();
-
-  if (!username || !password) {
-    return NextResponse.json(
-      { message: "Username and password are required" },
-      { status: 400 }
-    );
-  }
-
   try {
-    console.log("Login API: Attempting to get database connection.");
+    const body = await req.json();
+    
+    // Validate the request body against the schema
+    const validationResult = loginSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return errorResponse(
+        'Validation Error',
+        400,
+        validationResult.error.flatten().fieldErrors
+      );
+    }
+
+    const { username, password } = validationResult.data;
+
     const connection = await getConnection();
-    console.log("Login API: Database connection established. Executing query.");
     const [rows] = (await connection.execute(
-      "SELECT * FROM admins WHERE username = ?",
+      "SELECT id, username, password FROM admins WHERE username = ?",
       [username]
     )) as [{ id: number; username: string; password: string }[], unknown];
-    console.log("Login API: Query executed. Rows found:", rows.length);
 
     if (rows.length === 0) {
-      return NextResponse.json(
-        { message: "Invalid username or password" },
-        { status: 401 }
-      );
+      return errorResponse("Invalid username or password", 401);
     }
 
     const user = rows[0];
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return NextResponse.json(
-        { message: "Invalid username or password" },
-        { status: 401 }
-      );
+      return errorResponse("Invalid username or password", 401);
     }
 
-    console.log("Login API: Password matched. Generating session ID.");
     const sessionId = randomBytes(16).toString("hex");
-    console.log("Login API: Session ID generated. Setting session data.");
-
     await setSession({ sessionId, isAdmin: true });
-    console.log("Login API: Session data set. Login successful.");
 
-    return NextResponse.json({ message: "Login successful" });
+    return successResponse({ message: "Login successful" }, "Login successful");
   } catch (error) {
-    console.error("Login API: An error occurred:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error during login:", error);
+    return errorResponse("Internal server error", 500);
   }
 }

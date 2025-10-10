@@ -1,5 +1,19 @@
 import { getConnection } from '@/utils/db';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { successResponse, errorResponse } from '@/lib/apiResponse';
+
+// Define a schema for the expected question input
+const questionSchema = z.object({
+  text: z.string().min(1, "Question text is required"),
+  answer: z.string().min(1, "Answer is required"),
+  category: z.string().default('General'),
+  difficulty: z.number().int().min(1).max(5).default(1),
+  round: z.number().int().min(1).default(1),
+  topic: z.string().default('General'),
+  question_type: z.string().default('text'),
+  options: z.string().optional().nullable().transform(e => e === "" ? null : e), // Allow empty string to become null
+});
 
 export async function GET(request: Request) {
   try {
@@ -18,39 +32,40 @@ export async function GET(request: Request) {
     query += ' ORDER BY created_at DESC';
     
     const [rows] = await connection.execute(query, params);
-    return NextResponse.json(rows);
+    return successResponse(rows, 'Questions fetched successfully');
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching questions:', error);
+    return errorResponse('Internal server error', 500);
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const { text, answer, category, difficulty, round, topic, question_type, options } = await req.json();
+    const body = await req.json();
     
-    // Handle options field - ensure it's either null or valid JSON
-    let processedOptions = null;
-    if (options && options.trim() !== '') {
-      try {
-        // Try to parse as JSON to validate
-        JSON.parse(options);
-        processedOptions = options;
-      } catch {
-        // If not valid JSON, set to null
-        processedOptions = null;
-      }
+    // Validate the request body against the schema
+    const validationResult = questionSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      // If validation fails, return a 400 Bad Request with validation errors
+      return errorResponse(
+        'Validation Error',
+        400,
+        validationResult.error.flatten().fieldErrors
+      );
     }
-    
+
+    const { text, answer, category, difficulty, round, topic, question_type, options } = validationResult.data;
+
     const connection = await getConnection();
     const [result] = await connection.execute(
       'INSERT INTO questions_bank (text, answer, category, difficulty, round, topic, question_type, options) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [text, answer, category, difficulty || 1, round || 1, topic || 'General', question_type || 'text', processedOptions]
+      [text, answer, category, difficulty, round, topic, question_type, options]
     );
     
-    return NextResponse.json({ message: 'Question added successfully', result });
+    return successResponse({ message: 'Question added successfully', result }, 'Question added successfully', 201);
   } catch (error) {
-    console.error('Error in API route:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Error adding question:', error);
+    return errorResponse('Internal server error', 500);
   }
 }
