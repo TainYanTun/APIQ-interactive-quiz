@@ -54,7 +54,7 @@ export default function StudentManagementPage() {
   async function fetchDepartments() {
     const res = await fetch('/api/departments');
     const data = await res.json();
-    setDepartments(data);
+    setDepartments(data.data);
   }
 
   useEffect(() => {

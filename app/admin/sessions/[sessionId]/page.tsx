@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import QuizControl from '@/components/QuizControl';
+import Scoreboard from '@/components/Scoreboard';
 
 interface Participant {
   student_id: string;
