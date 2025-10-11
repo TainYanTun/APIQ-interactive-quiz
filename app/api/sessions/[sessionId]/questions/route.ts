@@ -44,7 +44,7 @@ const addQuestionToSessionSchema = z.object({
 
 export async function POST(request: Request, { params }: { params: { sessionId: string } }) {
   try {
-    const sessionId = params.sessionId;
+    const { sessionId } = await params;
     const body = await request.json();
     const validationResult = addQuestionToSessionSchema.safeParse(body);
 

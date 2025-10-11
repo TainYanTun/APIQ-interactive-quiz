@@ -1,22 +1,26 @@
 import { getConnection } from "@/utils/db";
 import { successResponse, errorResponse } from "@/lib/apiResponse";
+import { RowDataPacket } from "mysql2";
 
-interface ScoreResult {
+interface ScoreResult extends RowDataPacket {
   student_id: string;
   name: string;
   score: number;
 }
 
-export async function GET(request: Request, { params }: { params: { sessionId: string } }) {
+export async function GET(
+  request: Request,
+  context: { params: { sessionId: string } }
+) {
   try {
-    const { sessionId } = params;
+    const { sessionId } = await context.params;
 
     if (!sessionId) {
       return errorResponse("Session ID is required", 400);
     }
 
     const connection = await getConnection();
-    const [rows] = (await connection.execute(
+    const [rows] = await connection.execute<ScoreResult[]>(
       `SELECT s.student_id, s.name, COALESCE(SUM(qs.score), 0) as score
        FROM students s
        JOIN session_participants sp ON s.student_id = sp.student_id
@@ -25,7 +29,7 @@ export async function GET(request: Request, { params }: { params: { sessionId: s
        GROUP BY s.student_id, s.name
        ORDER BY score DESC`,
       [sessionId]
-    )) as ScoreResult[];
+    );
 
     return successResponse(rows, "Scores fetched successfully");
   } catch (error) {

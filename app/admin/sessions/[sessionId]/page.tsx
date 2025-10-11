@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Scoreboard from '@/components/Scoreboard';
+import QuizControl from '@/components/QuizControl';
 
 interface Participant {
   student_id: string;
@@ -34,7 +35,7 @@ export default function SessionParticipantsPage() {
   const [selectedQuestionToAdd, setSelectedQuestionToAdd] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'participants' | 'questions' | 'scoreboard'>('participants');
+  const [selectedTab, setSelectedTab] = useState<'quiz-control' | 'questions' | 'participants' | 'scoreboard'>('quiz-control');
 
   const fetchParticipants = useCallback(async () => {
     try {
@@ -202,11 +203,11 @@ export default function SessionParticipantsPage() {
         <ul className="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
           <li className="me-2">
             <button
-              className={`inline-block p-4 border-b-2 rounded-t-lg ${selectedTab === 'participants' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'}`}
-              onClick={() => setSelectedTab('participants')}
+              className={`inline-block p-4 border-b-2 rounded-t-lg ${selectedTab === 'quiz-control' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'}`}
+              onClick={() => setSelectedTab('quiz-control')}
               role="tab"
             >
-              Participants
+              Quiz Control
             </button>
           </li>
           <li className="me-2">
@@ -216,6 +217,15 @@ export default function SessionParticipantsPage() {
               role="tab"
             >
               Questions
+            </button>
+          </li>
+          <li className="me-2">
+            <button
+              className={`inline-block p-4 border-b-2 rounded-t-lg ${selectedTab === 'participants' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'}`}
+              onClick={() => setSelectedTab('participants')}
+              role="tab"
+            >
+              Participants
             </button>
           </li>
           <li className="me-2">
@@ -258,7 +268,7 @@ export default function SessionParticipantsPage() {
                   {participants.map((participant) => (
                     <tr key={participant.student_id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{participant.student_id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{participant.name}</td>
+                      <td className="px-6 py-4 whitespace-now-text-sm text-gray-500">{participant.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onClick={() => handleRemoveParticipant(participant.student_id)} className="text-red-600 hover:text-red-900">Remove</button>
                       </td>
@@ -365,6 +375,11 @@ export default function SessionParticipantsPage() {
       {selectedTab === 'scoreboard' && (
         <div className="bg-white rounded-lg border shadow-sm p-6">
           <Scoreboard sessionId={sessionId} />
+        </div>
+      )}
+      {selectedTab === 'quiz-control' && (
+        <div className="bg-white rounded-lg border shadow-sm p-6">
+          <QuizControl sessionId={sessionId} />
         </div>
       )}
     </div>

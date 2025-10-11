@@ -42,7 +42,7 @@ function JoinPageContent() {
       }
 
       // On success, redirect the student to their dashboard or quiz page
-      router.push('/student/dashboard'); // Assuming /student/dashboard is the destination
+      router.push('/student/quiz');
 
     } catch (err) {
       setError((err as Error).message);
