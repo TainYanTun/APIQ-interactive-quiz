@@ -50,7 +50,11 @@ const platformItems = [
   },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  adminName: string;
+}
+
+export function AppSidebar({ adminName }: AppSidebarProps) {
   return (
     <Sidebar className="bg-white text-gray-900">
       <SidebarHeader className="p-4">
@@ -59,8 +63,8 @@ export function AppSidebar() {
             <Building2 className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="font-semibold text-gray-900">QUIZ APP</div>
-            <div className="text-sm text-gray-600">Asia-Pacific International University</div>
+            <div className="font-semibold text-gray-900">APIQ Admin</div>
+            <div className="text-sm text-gray-600">Quiz Platform</div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-600 ml-auto" />
         </div>
@@ -93,11 +97,11 @@ export function AppSidebar() {
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-semibold">S</span>
+            <span className="text-white text-sm font-semibold">{adminName.charAt(0).toUpperCase()}</span>
           </div>
           <div className="flex-1">
-            <div className="font-medium text-gray-900">admin</div>
-            <div className="text-sm text-gray-600">m@example.com</div>
+            <div className="font-medium text-gray-900">{adminName}</div>
+            <div className="text-sm text-gray-600">Administrator</div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-600" />
         </div>

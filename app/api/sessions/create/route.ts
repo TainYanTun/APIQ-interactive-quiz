@@ -2,8 +2,13 @@ import { getConnection } from "@/utils/db";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { randomBytes } from "crypto";
+import { z } from "zod";
 
-export async function POST() {
+const createSessionSchema = z.object({
+  name: z.string().min(1, "Session name is required"),
+});
+
+export async function POST(req: Request) {
   const sessionData = await getSession();
   const isAdmin = sessionData?.isAdmin;
 
@@ -13,13 +18,26 @@ export async function POST() {
 
   let connection;
   try {
+    const body = await req.json();
+    const validationResult = createSessionSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { message: "Validation Error", errors: validationResult.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const { name } = validationResult.data;
+
     connection = await getConnection();
     const sessionId = randomBytes(16).toString("hex");
-    await connection.execute("INSERT INTO sessions (id) VALUES (?)", [
+    await connection.execute("INSERT INTO sessions (id, name) VALUES (?, ?)", [
       sessionId,
+      name,
     ]);
 
-    return NextResponse.json({ sessionId });
+    return NextResponse.json({ sessionId, name });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

@@ -13,7 +13,20 @@ export async function GET() {
   let connection;
   try {
     connection = await getConnection();
-    const [rows] = await connection.execute("SELECT id, created_at, is_active FROM sessions ORDER BY created_at DESC");
+    const [rows] = await connection.execute(
+      `SELECT 
+        s.id, 
+        s.name, 
+        s.created_at, 
+        s.is_active,
+        COUNT(DISTINCT sp.student_id) AS participant_count,
+        COUNT(DISTINCT sq.question_id) AS question_count
+       FROM sessions s
+       LEFT JOIN session_participants sp ON s.id = sp.session_id
+       LEFT JOIN session_questions sq ON s.id = sq.session_id
+       GROUP BY s.id, s.name, s.created_at, s.is_active
+       ORDER BY s.created_at DESC`
+    );
     return NextResponse.json(rows);
   } catch (error) {
     console.error(error);

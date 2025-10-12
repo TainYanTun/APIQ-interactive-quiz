@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     const sessionId = randomBytes(16).toString("hex");
-    await setSession({ sessionId, isAdmin: true });
+    await setSession({ sessionId, isAdmin: true, username: user.username });
 
     return successResponse({ message: "Login successful" }, "Login successful");
   } catch (error) {

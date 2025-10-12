@@ -24,9 +24,17 @@ interface Question {
   is_active: number;
 }
 
+interface SessionDetails {
+  id: string;
+  name: string;
+  created_at: string;
+  is_active: number;
+}
+
 export default function SessionParticipantsPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
+  const [sessionDetails, setSessionDetails] = useState<SessionDetails | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
@@ -37,6 +45,25 @@ export default function SessionParticipantsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'quiz-control' | 'questions' | 'participants' | 'scoreboard'>('quiz-control');
   const [currentScoringMode, setCurrentScoringMode] = useState<'individual' | 'department'>('individual');
+
+  const fetchSessionDetails = useCallback(async () => {
+    try {
+      const response = await fetch('/api/sessions'); // Fetch all sessions
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data: SessionDetails[] = await response.json();
+      const currentSession = data.find(session => session.id === sessionId);
+      if (currentSession) {
+        setSessionDetails(currentSession);
+      } else {
+        setError("Session not found");
+      }
+    } catch (err) {
+      setError((err as Error).message);
+      console.error('Failed to fetch session details:', err);
+    }
+  }, [sessionId]);
 
   const fetchParticipants = useCallback(async () => {
     try {
@@ -108,10 +135,11 @@ export default function SessionParticipantsPage() {
 
   useEffect(() => {
     if (!sessionId) return;
+    fetchSessionDetails();
     fetchParticipants();
     fetchSessionQuestions();
     fetchCategories();
-  }, [sessionId, fetchParticipants, fetchSessionQuestions, fetchCategories]);
+  }, [sessionId, fetchSessionDetails, fetchParticipants, fetchSessionQuestions, fetchCategories]);
 
   useEffect(() => {
     fetchAllQuestions(selectedCategoryFilter);
@@ -200,7 +228,7 @@ export default function SessionParticipantsPage() {
   return (
     <div className="relative space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Session Details</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{sessionDetails?.name || "Session Details"}</h1>
         <p className="text-gray-600 mt-4">Session ID: <span className="font-mono bg-gray-200 px-2 py-1 rounded">{sessionId}</span></p>
       </div>
 

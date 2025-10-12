@@ -7,8 +7,11 @@ import SessionCard from '@/components/SessionCard';
 
 interface Session {
   id: string;
+  name: string; // Added name property
   created_at: string;
   is_active: number; // Assuming 0 or 1 for boolean
+  participant_count?: number; // Added participant_count
+  question_count?: number; // Added question_count
 }
 
 export default function SessionsPage() {
@@ -16,6 +19,7 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [qrCodeValue, setQrCodeValue] = useState<string | null>(null);
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const router = useRouter();
 
   async function fetchSessions() {
@@ -44,9 +48,17 @@ export default function SessionsPage() {
   }, []);
 
   const createSession = async () => {
+    const sessionName = prompt("Enter a name for the new session:");
+    if (!sessionName || sessionName.trim() === "") {
+      alert("Session name cannot be empty.");
+      return;
+    }
+
     try {
       const response = await fetch('/api/sessions/create', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: sessionName }),
       });
 
       let errorData = { message: 'Unknown error' };
@@ -123,10 +135,24 @@ export default function SessionsPage() {
   const showQrCode = (sessionId: string) => {
     const url = `${window.location.origin}/join?session_id=${sessionId}`;
     setQrCodeValue(url);
+    setCopySuccess(false); // Reset copy success message
   };
 
   const closeModal = () => {
     setQrCodeValue(null);
+  };
+
+  const handleCopyLink = async () => {
+    if (qrCodeValue) {
+      try {
+        await navigator.clipboard.writeText(qrCodeValue);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000); // Hide message after 2 seconds
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy the link.');
+      }
+    }
   };
 
   return (
@@ -162,13 +188,23 @@ export default function SessionsPage() {
 
       {qrCodeValue && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeModal}>
-          <div className="bg-white p-8 rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-2xl font-bold text-center mb-4">Scan to Join Session</h3>
-            <QRCodeSVG value={qrCodeValue} size={256} />
-            <p className="mt-4 text-center text-gray-600 break-all">{qrCodeValue}</p>
-            <button onClick={closeModal} className="mt-6 w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-              Close
-            </button>
+          <div className="bg-white p-8 rounded-lg shadow-2xl max-w-sm w-full mx-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-center mb-4 text-gray-800">Scan to Join Session</h3>
+            <div className="flex justify-center mb-4">
+              <QRCodeSVG value={qrCodeValue} size={256} level="H" includeMargin={true} />
+            </div>
+            <p className="mt-4 text-center text-gray-600 break-all text-sm mb-4">{qrCodeValue}</p>
+            <div className="flex flex-col space-y-3">
+              <button
+                onClick={handleCopyLink}
+                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded transition-colors"
+              >
+                {copySuccess ? 'Copied!' : 'Copy Link'}
+              </button>
+              <button onClick={closeModal} className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
