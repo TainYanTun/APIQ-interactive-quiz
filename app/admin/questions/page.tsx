@@ -24,6 +24,20 @@ const categories = [
   'IT'
 ];
 
+const difficultyColors = {
+  1: 'bg-emerald-50 text-emerald-700',
+  2: 'bg-amber-50 text-amber-700',
+  3: 'bg-rose-50 text-rose-700'
+};
+
+const categoryColors: Record<string, string> = {
+  'General Knowledge': 'bg-indigo-50 text-indigo-700',
+  'English': 'bg-purple-50 text-purple-700',
+  'Math': 'bg-blue-50 text-blue-700',
+  'Social Study': 'bg-pink-50 text-pink-700',
+  'IT': 'bg-cyan-50 text-cyan-700'
+};
+
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -50,15 +64,15 @@ export default function QuestionsPage() {
       const responseData = await res.json();
 
       if (res.ok) {
-        setQuestions(responseData.data || []); // Access the 'data' property
+        setQuestions(responseData.data || []);
       } else {
         console.error('Error fetching questions:', responseData);
-        setQuestions([]); // Ensure questions is an empty array on error
+        setQuestions([]);
         alert(`Failed to fetch questions: ${responseData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Network or parsing error fetching questions:', error);
-      setQuestions([]); // Ensure questions is an empty array on network/parsing error
+      setQuestions([]);
       alert('Failed to fetch questions due to a network error.');
     }
   }, [selectedCategory]);
@@ -99,10 +113,8 @@ export default function QuestionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prepare the data with proper options handling
     const questionData = {
       ...newQuestion,
-      // Only include options if it's not empty and for multiple choice questions
       options: (newQuestion.question_type === 'multiple_choice' && newQuestion.options.trim() !== '') 
         ? newQuestion.options.trim() 
         : null
@@ -159,17 +171,17 @@ export default function QuestionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Questions Management</h1>
-        <p className="text-gray-600">Manage your quiz questions here.</p>
+        <p className="text-gray-600 mt-1">Manage your quiz questions here.</p>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
-        <div className="p-6 border-b flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-semibold text-gray-900">Question Library</h2>
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="p-5 border-b border-gray-200 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold text-gray-900">Question Library</h2>
             <select 
               value={selectedCategory} 
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="all">All Categories</option>
               {categories.map((category) => (
@@ -179,106 +191,123 @@ export default function QuestionsPage() {
           </div>
           <button 
             onClick={() => setShowModal(true)} 
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Add Question
           </button>
         </div>
         
-        <div className="p-6">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Question
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Answer
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Difficulty
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th scope="col" className="relative px-6 py-3">
-                    <span className="sr-only">Actions</span>
-                  </th>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Question
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Answer
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Difficulty
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {questions.map((question) => (
+                <tr key={question.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    <div className="max-w-xs truncate font-medium" title={question.text}>
+                      {question.text}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    <div className="max-w-xs truncate" title={question.answer}>
+                      {question.answer}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${categoryColors[question.category] || 'bg-gray-100 text-gray-700'}`}>
+                      {question.category}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${difficultyColors[question.difficulty as keyof typeof difficultyColors]}`}>
+                      {question.difficulty === 1 ? 'Easy' : question.difficulty === 2 ? 'Medium' : 'Hard'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {question.question_type.replace('_', ' ')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button 
+                      onClick={() => handleEdit(question)} 
+                      className="text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(question.id)} 
+                      className="ml-2 text-gray-600 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {questions.map((question) => (
-                  <tr key={question.id}>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="max-w-xs truncate" title={question.text}>
-                        {question.text}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <div className="max-w-xs truncate" title={question.answer}>
-                        {question.answer}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {question.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {question.difficulty}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {question.question_type}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => handleEdit(question)} 
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(question.id)} 
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {questions.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No questions found for the selected category.</p>
-            </div>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
+        
+        {questions.length === 0 && (
+          <div className="text-center py-12">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="mt-2 text-sm text-gray-500">No questions found for the selected category.</p>
+          </div>
+        )}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center">
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-          <div className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-2xl sm:w-full">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity" onClick={closeModal}></div>
+          <div className="relative bg-white rounded-lg shadow-xl transform transition-all max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  {editingQuestion ? 'Edit Question' : 'Add New Question'}
-                </h3>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {editingQuestion ? 'Edit Question' : 'Add New Question'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Question Text</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Question Text</label>
                     <textarea
                       value={newQuestion.text}
                       onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       rows={3}
                       required
                       placeholder="Enter the question text..."
@@ -286,11 +315,11 @@ export default function QuestionsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Answer</label>
                     <textarea
                       value={newQuestion.answer}
                       onChange={(e) => setNewQuestion({ ...newQuestion, answer: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       rows={2}
                       required
                       placeholder="Enter the correct answer..."
@@ -299,11 +328,11 @@ export default function QuestionsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
                       <select
                         value={newQuestion.category}
                         onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                         required
                       >
                         {categories.map((category) => (
@@ -313,11 +342,11 @@ export default function QuestionsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Difficulty</label>
                       <select
                         value={newQuestion.difficulty}
                         onChange={(e) => setNewQuestion({ ...newQuestion, difficulty: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       >
                         <option value={1}>Easy (1)</option>
                         <option value={2}>Medium (2)</option>
@@ -328,18 +357,18 @@ export default function QuestionsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Round</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Round</label>
                       <input
                         type="number"
                         min="1"
                         value={newQuestion.round}
                         onChange={(e) => setNewQuestion({ ...newQuestion, round: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Question Type</label>
                       <select
                         value={newQuestion.question_type}
                         onChange={(e) => {
@@ -347,11 +376,10 @@ export default function QuestionsPage() {
                           setNewQuestion({ 
                             ...newQuestion, 
                             question_type: newType,
-                            // Clear options if not multiple choice
                             options: newType === 'multiple_choice' ? newQuestion.options : ''
                           });
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       >
                         <option value="text">Text</option>
                         <option value="multiple_choice">Multiple Choice</option>
@@ -361,23 +389,23 @@ export default function QuestionsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Topic</label>
                     <input
                       type="text"
                       value={newQuestion.topic}
                       onChange={(e) => setNewQuestion({ ...newQuestion, topic: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                       placeholder="Enter topic (optional)"
                     />
                   </div>
 
                   {newQuestion.question_type === 'multiple_choice' && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Options (JSON format)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Options (JSON format)</label>
                       <textarea
                         value={newQuestion.options}
                         onChange={(e) => setNewQuestion({ ...newQuestion, options: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md resize-none"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-mono text-sm"
                         rows={3}
                         placeholder='["Option A", "Option B", "Option C", "Option D"]'
                       />
@@ -386,19 +414,19 @@ export default function QuestionsPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button 
-                  type="submit" 
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm"
-                >
-                  {editingQuestion ? 'Update' : 'Add'} Question
-                </button>
+              <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
                 <button 
                   type="button" 
                   onClick={closeModal} 
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  {editingQuestion ? 'Update' : 'Add'} Question
                 </button>
               </div>
             </form>

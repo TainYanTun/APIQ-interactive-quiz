@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS session_participants (
     is_representative TINYINT(1) DEFAULT 0,
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(student_id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     UNIQUE(student_id, session_id)
 );
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS student_question_scores (
     score INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(student_id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES questions_bank(id),
     UNIQUE(student_id, session_id, question_id)
 );
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS student_round_scores (
     score INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(student_id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     UNIQUE(student_id, session_id, round)
 );
 
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS department_round_scores (
     score INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (department_id) REFERENCES departments(id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     UNIQUE(department_id, session_id, round)
 );
 

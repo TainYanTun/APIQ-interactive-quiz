@@ -8,7 +8,7 @@ interface Student {
   name: string;
   department: string;
   image_url: string;
-  is_active: number; // Added is_active property
+  is_active: number;
 }
 
 interface Department {
@@ -21,7 +21,7 @@ export default function StudentManagementPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newStudent, setNewStudent] = useState({ student_id: '', name: '', department_id: '' });
-  const [filterStatus, setFilterStatus] = useState<'active' | 'inactive' | 'all'>('active'); // New state for filter
+  const [filterStatus, setFilterStatus] = useState<'active' | 'inactive' | 'all'>('active');
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -31,7 +31,7 @@ export default function StudentManagementPage() {
       } else if (filterStatus === 'inactive') {
         url += '?is_active=0';
       } else if (filterStatus === 'all') {
-        url += '?is_active=all'; // Backend will ignore this or handle it as 'all'
+        url += '?is_active=all';
       }
 
       const res = await fetch(url);
@@ -49,7 +49,7 @@ export default function StudentManagementPage() {
       setStudents([]);
       alert('Failed to fetch students due to a network error.');
     }
-  }, [filterStatus]); // Re-fetch when filterStatus changes
+  }, [filterStatus]);
 
   async function fetchDepartments() {
     const res = await fetch('/api/departments');
@@ -63,7 +63,7 @@ export default function StudentManagementPage() {
   }, [fetchStudents]);
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this student?')) {
+    if (confirm('Are you sure you want to deactivate this student?')) {
       try {
         const res = await fetch('/api/students/delete', {
           method: 'POST',
@@ -133,7 +133,7 @@ export default function StudentManagementPage() {
 
     const studentDataToSend = {
       ...newStudent,
-      department_id: parseInt(newStudent.department_id, 10), // Convert to number
+      department_id: parseInt(newStudent.department_id, 10),
     };
 
     console.log('Adding student:', studentDataToSend);
@@ -161,31 +161,40 @@ export default function StudentManagementPage() {
       alert(errorMessage);
     }
   };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Student Management</h1>
-        <p className="text-gray-600">Manage student accounts and performance.</p>
+        <p className="text-gray-600 mt-1">Manage student accounts and performance.</p>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm">
-        <div className="p-6 border-b flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-semibold text-gray-900">Student Database</h2>
-            {/* Filter for active/inactive students */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="p-5 border-b border-gray-200 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold text-gray-900">Student Database</h2>
             <select 
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as 'active' | 'inactive' | 'all')}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="active">Active Students</option>
               <option value="inactive">Inactive Students</option>
               <option value="all">All Students</option>
             </select>
           </div>
-          <button onClick={() => setShowModal(true)} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Create Student</button>
+          <button 
+            onClick={() => setShowModal(true)} 
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create Student
+          </button>
         </div>
-        <div className="p-6">
+        
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -201,30 +210,50 @@ export default function StudentManagementPage() {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {students.map((student) => (
-                <tr key={student.id} className={student.is_active === 0 ? 'bg-gray-50 text-gray-500' : ''}><td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.student_id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.department}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      student.is_active === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                <tr key={student.id} className={`transition-colors ${student.is_active === 0 ? 'bg-gray-50' : 'hover:bg-gray-50'}`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                      {student.student_id}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {student.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {student.department}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full ${
+                      student.is_active === 1 ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'
                     }`}>
                       {student.is_active === 1 ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {student.is_active === 1 ? (
-                      <button onClick={() => handleDelete(student.id)} className="ml-4 text-red-600 hover:text-red-900">Deactivate</button>
+                      <button 
+                        onClick={() => handleDelete(student.id)} 
+                        className="text-gray-600 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Deactivate
+                      </button>
                     ) : (
-                      <button onClick={() => handleActivate(student.id)} className="ml-4 text-green-600 hover:text-green-900">Activate</button>
+                      <button 
+                        onClick={() => handleActivate(student.id)} 
+                        className="text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Activate
+                      </button>
                     )}
-                  </td></tr>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -232,20 +261,57 @@ export default function StudentManagementPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-            <div className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
-              <form onSubmit={handleAddStudent}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">Add New Student</h3>
-                  <div className="mt-2">
-                    <input type="text" placeholder="Student ID" value={newStudent.student_id} onChange={(e) => setNewStudent({ ...newStudent, student_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity" onClick={() => setShowModal(false)}></div>
+          <div className="relative bg-white rounded-lg shadow-xl transform transition-all max-w-lg w-full">
+            <form onSubmit={handleAddStudent}>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-semibold text-gray-900">Add New Student</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Student ID</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter student ID" 
+                      value={newStudent.student_id} 
+                      onChange={(e) => setNewStudent({ ...newStudent, student_id: e.target.value })} 
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                      required 
+                    />
                   </div>
-                  <div className="mt-2">
-                    <input type="text" placeholder="Name" value={newStudent.name} onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required />
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter student name" 
+                      value={newStudent.name} 
+                      onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })} 
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" 
+                      required 
+                    />
                   </div>
-                  <div className="mt-2">
-                    <select value={newStudent.department_id} onChange={(e) => setNewStudent({ ...newStudent, department_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
+                    <select 
+                      value={newStudent.department_id} 
+                      onChange={(e) => setNewStudent({ ...newStudent, department_id: e.target.value })} 
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white" 
+                      required
+                    >
                       <option value="">Select Department</option>
                       {departments.map((dept) => (
                         <option key={dept.id} value={dept.id}>{dept.name}</option>
@@ -253,12 +319,25 @@ export default function StudentManagementPage() {
                     </select>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Add</button>
-                  <button type="button" onClick={() => setShowModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
-                </div>
-              </form>
-            </div>
+              </div>
+              
+              <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
+                <button 
+                  type="button" 
+                  onClick={() => setShowModal(false)} 
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Add Student
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
