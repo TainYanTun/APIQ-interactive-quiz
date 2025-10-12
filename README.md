@@ -41,8 +41,10 @@ Built with modern web technologies, QuizMaster offers real-time interaction, rob
     *   **WebSockets (ws):** For real-time, bidirectional communication between server and clients.
     *   **MySQL2/Promise:** A robust MySQL client for Node.js with Promise API.
     *   **Bcrypt:** For secure password hashing.
+    *   **ioredis:** High-performance Redis client for Node.js.
 *   **Database:**
     *   **MySQL:** A popular open-source relational database management system.
+    *   **Redis:** An in-memory data structure store, used for session management.
 
 ## 🏁 Getting Started
 
@@ -55,6 +57,7 @@ Before you begin, ensure you have the following installed:
 *   **Node.js** (LTS version recommended)
 *   **npm** (comes with Node.js) or **Yarn**
 *   **MySQL Server** (version 8.0+ recommended)
+*   **Redis Server** (version 6.0+ recommended)
 
 ### Installation
 
@@ -83,13 +86,17 @@ Before you begin, ensure you have the following installed:
 
 2.  **Configure environment variables:**
 
-    Create a `.env` file in the root of the project based on `.env.sample` and fill in your database credentials:
+    Create a `.env` file in the root of the project based on `.env.sample` and fill in your database and Redis credentials:
 
     ```env
     DB_HOST=localhost
     DB_USER=your_mysql_user
     DB_PASSWORD=your_mysql_password
     DB_DATABASE=quiz_app
+
+    REDIS_HOST=localhost
+    REDIS_PORT=6379
+    REDIS_PASSWORD=your_redis_password # Optional, if your Redis requires a password
     ```
 
 3.  **Run database migrations:**
