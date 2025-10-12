@@ -1,9 +1,9 @@
 'use client';
-
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, use } from 'react';
 import { useParams } from 'next/navigation';
 import Scoreboard from '@/components/Scoreboard';
 import QuizControl from '@/components/QuizControl';
+import SessionQrCode from '@/components/SessionQrCode';
 
 interface Participant {
   student_id: string;
@@ -198,7 +198,7 @@ export default function SessionParticipantsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Session Details</h1>
         <p className="text-gray-600 mt-4">Session ID: <span className="font-mono bg-gray-200 px-2 py-1 rounded">{sessionId}</span></p>
@@ -245,148 +245,155 @@ export default function SessionParticipantsPage() {
         </ul>
       </div>
 
-      {selectedTab === 'participants' && (
-        <div className="bg-white rounded-lg border shadow-sm">
-          <div className="p-6">
-            {loading ? (
-              <p>Loading participants...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : participants.length === 0 ? (
-              <p className="text-gray-500">No participants have joined this session yet.</p>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Student ID
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {participants.map((participant) => (
-                    <tr key={participant.student_id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{participant.student_id}</td>
-                      <td className="px-6 py-4 whitespace-now-text-sm text-gray-500">{participant.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onClick={() => handleRemoveParticipant(participant.student_id)} className="text-red-600 hover:text-red-900">Remove</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-
-      {selectedTab === 'questions' && (
-        <div className="bg-white rounded-lg border shadow-sm">
-          <div className="p-6 border-b flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Session Questions</h2>
-            <div className="flex items-center space-x-2">
-              <select
-                value={selectedCategoryFilter}
-                onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={selectedQuestionToAdd}
-                onChange={(e) => setSelectedQuestionToAdd(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="">Select a question to add</option>
-                {allQuestions.map((question) => (
-                  <option key={question.id} value={question.id}>
-                    {question.text}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleAddQuestionToSession}
-                disabled={!selectedQuestionToAdd}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-              >
-                Add Question
-              </button>
+      <div className="flex justify-between items-start">
+        <div className="flex-grow">
+          {selectedTab === 'participants' && (
+            <div className="bg-white rounded-lg border shadow-sm">
+              <div className="p-6">
+                {loading ? (
+                  <p>Loading participants...</p>
+                ) : error ? (
+                  <p className="text-red-500">{error}</p>
+                ) : participants.length === 0 ? (
+                  <p className="text-gray-500">No participants have joined this session yet.</p>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Student ID
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th scope="col" className="relative px-6 py-3">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {participants.map((participant) => (
+                        <tr key={participant.student_id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{participant.student_id}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{participant.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onClick={() => handleRemoveParticipant(participant.student_id)} className="text-red-600 hover:text-red-900">Remove</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="p-6">
-            {loading ? (
-              <p>Loading questions...</p>
-            ) : sessionQuestions.length === 0 ? (
-              <p className="text-gray-500">No questions added to this session yet.</p>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Question
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Difficulty
-                    </th>
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sessionQuestions.map((question) => (
-                    <tr key={question.id}>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="max-w-xs truncate" title={question.text}>
-                          {question.text}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {question.category}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {question.difficulty}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleRemoveSessionQuestion(question.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          )}
+
+          {selectedTab === 'questions' && (
+            <div className="bg-white rounded-lg border shadow-sm">
+              <div className="p-6 border-b flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-gray-900">Session Questions</h2>
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={selectedCategoryFilter}
+                    onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={selectedQuestionToAdd}
+                    onChange={(e) => setSelectedQuestionToAdd(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">Select a question to add</option>
+                    {allQuestions.map((question) => (
+                      <option key={question.id} value={question.id}>
+                        {question.text}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleAddQuestionToSession}
+                    disabled={!selectedQuestionToAdd}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  >
+                    Add Question
+                  </button>
+                </div>
+              </div>
+              <div className="p-6">
+                {loading ? (
+                  <p>Loading questions...</p>
+                ) : sessionQuestions.length === 0 ? (
+                  <p className="text-gray-500">No questions added to this session yet.</p>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Question
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Difficulty
+                        </th>
+                        <th scope="col" className="relative px-6 py-3">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {sessionQuestions.map((question) => (
+                        <tr key={question.id}>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            <div className="max-w-xs truncate" title={question.text}>
+                              {question.text}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {question.category}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {question.difficulty}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handleRemoveSessionQuestion(question.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+          {selectedTab === 'scoreboard' && (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <Scoreboard sessionId={sessionId} scoringMode={currentScoringMode} />
+            </div>
+          )}
+          {selectedTab === 'quiz-control' && (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <QuizControl sessionId={sessionId} onScoringModeChange={handleScoringModeChange} />
+            </div>
+          )}
         </div>
-      )}
-      {selectedTab === 'scoreboard' && (
-        <div className="bg-white rounded-lg border shadow-sm p-6">
-          <Scoreboard sessionId={sessionId} scoringMode={currentScoringMode} />
+        <div className="absolute top-0 right-0 z-10 m-4">
+          <SessionQrCode sessionId={sessionId} />
         </div>
-      )}
-      {selectedTab === 'quiz-control' && (
-        <div className="bg-white rounded-lg border shadow-sm p-6">
-          <QuizControl sessionId={sessionId} onScoringModeChange={handleScoringModeChange} />
-        </div>
-      )}
+      </div>
     </div>
   );
 }

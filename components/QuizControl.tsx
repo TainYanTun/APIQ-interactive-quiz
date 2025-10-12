@@ -201,7 +201,7 @@ export default function QuizControl({ sessionId, onScoringModeChange }: QuizCont
       <div className="flex justify-between items-center mb-8 pb-6 border-b border-gray-200">
         <div>
           <h1 className="text-xl font-light text-black mb-1">Quiz Control Panel</h1>
-          <p className="text-sm text-gray-500">ROUND: {quizState?.currentRound ? (quizState.isQuizEnded ? `${quizState.currentRound} Finished` : quizState.currentRound) : 'Not Started'}</p>
+          <p className="text-sm text-gray-500">ROUND FINISHED: {quizState?.currentRound ? `${quizState.currentRound} ${quizState.isQuizEnded ? "(Quiz Ended)" : "(Ongoing)"}` : 'Not Started'}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
