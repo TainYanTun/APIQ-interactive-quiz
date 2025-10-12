@@ -71,3 +71,4 @@ export async function POST(request: Request) {
     console.error("Error submitting answer:", error);
     return errorResponse("Internal server error", 500);
   }
+}
