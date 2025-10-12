@@ -25,8 +25,8 @@ export default function Scoreboard({ sessionId, scoringMode }: ScoreboardProps) 
         const errorData = await response.json();
         throw new Error(`Error: ${response.status} - ${errorData.message || response.statusText}`);
       }
-      const data: Score[] = await response.json();
-      setScores(data);
+      const result = await response.json();
+      setScores(result.data);
     } catch (err) {
       setError((err as Error).message);
       console.error('Failed to fetch scores:', err);

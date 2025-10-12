@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 
 interface Question {
   id: number;
@@ -138,8 +139,8 @@ export default function QuizControl({ sessionId, onScoringModeChange }: QuizCont
   const isQuizEnded = quizState?.isQuizEnded; // Use the isQuizEnded from quizState
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Quiz Control: Session {sessionId}</h1>
         <div className="flex items-center space-x-4">
           <div>
@@ -159,75 +160,99 @@ export default function QuizControl({ sessionId, onScoringModeChange }: QuizCont
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Question</h2>
-          {isQuizEnded ? (
-            <p className="text-xl font-bold">Quiz Ended!</p>
-          ) : quizState?.isQuizStarted ? (
-            currentQuestion ? (
-              <div>
-                <p className="text-lg">Q{quizState?.currentQuestionIndex + 1}: {currentQuestion.text}</p>
-                <p className="text-md font-bold mt-2">Answer: {currentQuestion.answer}</p>
-              </div>
-            ) : (
-              <p>No more questions.</p>
-            )
-          ) : (
-            <p>Quiz has not started yet.</p>
-          )}
-          <div className="mt-4 space-x-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Question</CardTitle>
+          </CardHeader>
+          <CardContent>
             {isQuizEnded ? (
-              <Button onClick={() => sendCommand('START_NEW_ROUND')} className="ml-2">
-                Start New Round
-              </Button>
-            ) : Boolean(!quizState?.isQuizStarted && !isQuizEnded) ? (
-              <Button onClick={() => sendCommand('START_QUIZ')} disabled={Boolean(!isConnected || !quizState)}>
-                Start Quiz
-              </Button>
+              <p className="text-xl font-bold">Quiz Ended!</p>
+            ) : quizState?.isQuizStarted ? (
+              currentQuestion ? (
+                <div>
+                  <p className="text-lg">Q{quizState?.currentQuestionIndex + 1}: {currentQuestion.text}</p>
+                  <p className="text-md font-bold mt-2">Answer: {quizState.showAnswer ? currentQuestion.answer : 'Hidden'}</p>
+                </div>
+              ) : (
+                <p>No more questions.</p>
+              )
             ) : (
-              <Button onClick={handleNextQuestion} disabled={Boolean(!quizState?.isQuizStarted || quizState.currentQuestionIndex >= questions.length - 1 || !!quizState.activeStudent || isQuizEnded)}>
-                Next Question
-              </Button>
+              <p>Quiz has not started yet.</p>
             )}
+          </CardContent>
+          <CardFooter className="flex flex-col items-start space-y-2">
+            <div className="flex space-x-2">
+              {isQuizEnded ? (
+                <Button onClick={() => sendCommand('START_NEW_ROUND')}>
+                  Start New Round
+                </Button>
+              ) : Boolean(!quizState?.isQuizStarted && !isQuizEnded) ? (
+                <Button onClick={() => sendCommand('START_QUIZ')} disabled={Boolean(!isConnected || !quizState)}>
+                  Start Quiz
+                </Button>
+              ) : (
+                <>
+                  <Button onClick={handleNextQuestion} disabled={Boolean(!quizState?.isQuizStarted || quizState.currentQuestionIndex >= questions.length - 1 || !!quizState.activeStudent || isQuizEnded)}>
+                    Next Question
+                  </Button>
+                  <Button onClick={() => sendCommand('TOGGLE_ANSWER_VISIBILITY')}>
+                    {quizState?.showAnswer ? 'Hide Answer' : 'Show Answer'}
+                  </Button>
+                </>
+              )}
+            </div>
             {Boolean(quizState?.isQuizStarted && !isQuizEnded) && (
-              <Button onClick={() => sendCommand('END_QUIZ')} variant="destructive" className="ml-2">
+              <Button onClick={() => sendCommand('END_QUIZ')} variant="destructive">
                 End Quiz
               </Button>
             )}
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
 
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Live State</h2>
-          {quizState ? (
-            <div>
-              <p>Timer: {(quizState.remainingTime / 1000).toFixed(1)}s</p>
-              <p>Buzzer Active: {quizState.isBuzzerActive ? 'YES' : 'NO'}</p>
-              <p>Active Student: {quizState.activeStudent || 'None'}</p>
-              <div className="flex items-center space-x-2 mt-2">
-                <Button onClick={() => handleJudgeAnswer(true)} disabled={Boolean(quizState.activeStudent === null || isQuizEnded)}>Correct</Button>
-                <Button onClick={() => handleJudgeAnswer(false)} variant="destructive" disabled={Boolean(quizState.activeStudent === null || isQuizEnded)}>Incorrect</Button>
+        <Card>
+          <CardHeader>
+            <CardTitle>Live State</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {quizState ? (
+              <div className="space-y-2">
+                <p className="text-lg">Timer: <span className="font-bold">{(quizState.remainingTime / 1000).toFixed(1)}s</span></p>
+                <p className="text-lg">Buzzer Active: <span className="font-bold">{quizState.isBuzzerActive ? 'YES' : 'NO'}</span></p>
+                <p className="text-lg">Active Student: <span className="font-bold">{quizState.activeStudent || 'None'}</span></p>
+                <div className="flex space-x-2 pt-2">
+                  <Button onClick={() => handleJudgeAnswer(true)} disabled={Boolean(quizState.activeStudent === null || isQuizEnded)}>Correct</Button>
+                  <Button onClick={() => handleJudgeAnswer(false)} variant="destructive" disabled={Boolean(quizState.activeStudent === null || isQuizEnded)}>Incorrect</Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">Ineligible Students: {quizState.ineligibleStudents.join(', ')}</p>
               </div>
-              <p className="mt-2">Ineligible Students: {quizState.ineligibleStudents.join(', ')}</p>
-            </div>
-          ) : (
-            <p>Waiting for connection...</p>
-          )}
-        </div>
+            ) : (
+              <p>Waiting for connection...</p>
+            )}
+          </CardContent>
+        </Card>
 
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Scores</h2>
-          {quizState?.scores ? (
-            <ul>
-              {Object.entries(quizState.scores).map(([name, score]) => (
-                <li key={name}>{name}: {score}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>No scores yet.</p>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Scores</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {quizState?.scores ? (
+              <ul className="space-y-1">
+                {Object.entries(quizState.scores)
+                  .sort(([, scoreA], [, scoreB]) => scoreB - scoreA) // Sort by score descending
+                  .map(([name, score]) => (
+                    <li key={name} className="flex justify-between items-center">
+                      <span>{name}</span>
+                      <span className="font-bold">{score}</span>
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p>No scores yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

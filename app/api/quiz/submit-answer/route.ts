@@ -51,19 +51,17 @@ export async function POST(request: Request) {
     const { answer: correctAnswer, round } = questionRows[0];
     const score = answer === correctAnswer ? 10 : 0;
 
-    if (score > 0) {
-        // Save the per-question score for analytics
-        await connection.execute(
-            "INSERT INTO student_question_scores (student_id, session_id, question_id, score) VALUES (?, ?, ?, ?)",
-            [studentId, sessionId, questionId, score]
-        );
+    // Save the per-question score for analytics
+    await connection.execute(
+        "INSERT INTO student_question_scores (student_id, session_id, question_id, score) VALUES (?, ?, ?, ?)",
+        [studentId, sessionId, questionId, score]
+    );
 
-        // Save the per-round score for efficient querying
-        await connection.execute(
-            'INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)',
-            [sessionId, studentId, round, score]
-        );
-    }
+    // Save the per-round score for efficient querying
+    await connection.execute(
+        'INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)',
+        [sessionId, studentId, round, score]
+    );
 
     return successResponse(
       { correct: score > 0, score },
@@ -73,4 +71,3 @@ export async function POST(request: Request) {
     console.error("Error submitting answer:", error);
     return errorResponse("Internal server error", 500);
   }
-}
