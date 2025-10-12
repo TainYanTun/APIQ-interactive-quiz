@@ -6,7 +6,7 @@
 
 This is a dynamic and interactive quiz application designed to bring excitement and engagement to learning and assessment. Whether you're an educator looking to test your students, a trainer conducting interactive sessions, or just hosting a fun trivia night, APIQ provides a seamless and engaging experience for both administrators and participants.
 
-Built with modern web technologies, QuizMaster offers real-time interaction, robust administration tools, and a user-friendly interface, making it the perfect platform for any knowledge-based challenge.
+Built with modern web technologies, This quiz platform offers real-time interaction, robust administration tools, and a user-friendly interface, making it the perfect platform for any knowledge-based challenge.
 
 ## 🚀 Features at a Glance
 
