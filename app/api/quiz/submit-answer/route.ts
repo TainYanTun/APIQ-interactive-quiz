@@ -50,17 +50,28 @@ export async function POST(request: Request) {
 
     const { answer: correctAnswer, round } = questionRows[0];
     const score = answer === correctAnswer ? 10 : 0;
+    const isCorrect = score > 0;
 
-    // Save the per-question score for analytics
+    // Store the student's answer
     await connection.execute(
-        "INSERT INTO student_question_scores (student_id, session_id, question_id, score) VALUES (?, ?, ?, ?)",
-        [studentId, sessionId, questionId, score]
+      'INSERT INTO student_answers (student_id, session_id, question_id, answer, is_correct, submitted_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [studentId, sessionId, questionId, answer, isCorrect]
     );
 
-    // Save the per-round score for efficient querying
+    // Update or insert the student's score for the current question
     await connection.execute(
-        'INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)',
-        [sessionId, studentId, round, score]
+      `INSERT INTO student_question_scores (student_id, session_id, question_id, score)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE score = VALUES(score)`,
+      [studentId, sessionId, questionId, score]
+    );
+
+    // Update or insert the student's score for the current round
+    await connection.execute(
+      `INSERT INTO student_round_scores (student_id, session_id, round, score)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE score = score + VALUES(score)`,
+      [studentId, sessionId, round, score]
     );
 
     return successResponse(

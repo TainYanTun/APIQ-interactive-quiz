@@ -201,7 +201,7 @@ export default function SessionParticipantsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Session Details</h1>
-        <p className="text-gray-600">Session ID: <span className="font-mono bg-gray-200 px-2 py-1 rounded">{sessionId}</span></p>
+        <p className="text-gray-600 mt-4">Session ID: <span className="font-mono bg-gray-200 px-2 py-1 rounded">{sessionId}</span></p>
       </div>
 
       <div className="mb-4 border-b border-gray-200">
