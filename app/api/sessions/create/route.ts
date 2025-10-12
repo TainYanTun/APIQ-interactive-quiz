@@ -11,8 +11,9 @@ export async function POST() {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
     const sessionId = randomBytes(16).toString("hex");
     await connection.execute("INSERT INTO sessions (id) VALUES (?)", [
       sessionId,
@@ -25,5 +26,9 @@ export async function POST() {
       { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

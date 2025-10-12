@@ -15,8 +15,9 @@ export async function POST(
     );
   }
 
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
     await connection.execute(
       "DELETE FROM session_participants WHERE session_id = ? AND student_id = ?",
       [sessionId, student_id]
@@ -29,5 +30,9 @@ export async function POST(
       { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

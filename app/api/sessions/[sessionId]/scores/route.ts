@@ -11,6 +11,7 @@ export async function GET(
   request: Request,
   context: { params: { sessionId: string } }
 ) {
+  let connection;
   try {
     const { sessionId } = await context.params;
     const { searchParams } = new URL(request.url);
@@ -20,7 +21,7 @@ export async function GET(
       return errorResponse("Session ID is required", 400);
     }
 
-    const connection = await getConnection();
+    connection = await getConnection();
     let rows: ScoreResult[];
 
     if (mode === 'department') {
@@ -50,5 +51,9 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching scores:", error);
     return errorResponse("Internal server error", 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

@@ -16,6 +16,7 @@ interface QuestionInfo extends RowDataPacket {
 }
 
 export async function POST(request: Request) {
+  let connection;
   try {
     const session = await getSession();
     if (!session || !session.studentId) {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     const { sessionId, questionId, answer } = validationResult.data;
     const studentId = session.studentId;
 
-    const connection = await getConnection();
+    connection = await getConnection();
 
     // Get the correct answer and round
     const [questionRows] = await connection.execute<QuestionInfo[]>(
@@ -81,5 +82,9 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error submitting answer:", error);
     return errorResponse("Internal server error", 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

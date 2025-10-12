@@ -21,9 +21,10 @@ interface DBError extends Error {
 }
 
 export async function GET(request: Request, { params }: { params: { sessionId: string } }) {
+  let connection;
   try {
     const { sessionId } = await params;
-    const connection = await getConnection();
+    connection = await getConnection();
     const [rows] = await connection.execute(
       `SELECT qb.*
        FROM session_questions sq
@@ -35,6 +36,10 @@ export async function GET(request: Request, { params }: { params: { sessionId: s
   } catch (error) {
     console.error('Error fetching session questions:', error);
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
@@ -43,6 +48,7 @@ const addQuestionToSessionSchema = z.object({
 });
 
 export async function POST(request: Request, { params }: { params: { sessionId: string } }) {
+  let connection;
   try {
     const { sessionId } = await params;
     const body = await request.json();
@@ -54,7 +60,7 @@ export async function POST(request: Request, { params }: { params: { sessionId: 
 
     const { question_id } = validationResult.data;
 
-    const connection = await getConnection();
+    connection = await getConnection();
     await connection.execute(
       'INSERT INTO session_questions (session_id, question_id) VALUES (?, ?)',
       [sessionId, question_id]
@@ -68,5 +74,9 @@ export async function POST(request: Request, { params }: { params: { sessionId: 
       return errorResponse('This question has already been added to the session.', 409);
     }
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

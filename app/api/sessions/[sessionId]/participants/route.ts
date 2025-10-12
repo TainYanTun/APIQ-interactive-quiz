@@ -19,8 +19,9 @@ export async function GET(
     );
   }
 
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
     const [participants] = (await connection.execute(
       `SELECT s.student_id, s.name
        FROM students s
@@ -36,5 +37,9 @@ export async function GET(
       { message: "Internal server error", error: (error as Error).message },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

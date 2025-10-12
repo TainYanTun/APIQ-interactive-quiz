@@ -31,6 +31,7 @@ const updateQuestionSchema = z.object({
 });
 
 export async function PUT(req: Request) {
+  let connection;
   try {
     const body = await req.json();
     
@@ -52,7 +53,7 @@ export async function PUT(req: Request) {
       return errorResponse('No fields provided for update', 400);
     }
 
-    const connection = await getConnection();
+    connection = await getConnection();
     
     const setClauses = Object.keys(updateData).map(key => `\`${key}\` = ?`).join(', ');
     const values = Object.values(updateData);
@@ -71,5 +72,9 @@ export async function PUT(req: Request) {
   } catch (error) {
     console.error('Error updating question:', error);
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

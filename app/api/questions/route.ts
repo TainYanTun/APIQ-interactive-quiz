@@ -15,11 +15,12 @@ const questionSchema = z.object({
 });
 
 export async function GET(request: Request) {
+  let connection;
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     
-    const connection = await getConnection();
+    connection = await getConnection();
     let query = 'SELECT * FROM questions_bank WHERE is_active = 1';
     const params: string[] = [];
     
@@ -35,10 +36,15 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching questions:', error);
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
 export async function POST(req: Request) {
+  let connection;
   try {
     const body = await req.json();
     
@@ -56,7 +62,7 @@ export async function POST(req: Request) {
 
     const { text, answer, category, difficulty, round, topic, question_type, options } = validationResult.data;
 
-    const connection = await getConnection();
+    connection = await getConnection();
     const [result] = await connection.execute(
       'INSERT INTO questions_bank (text, answer, category, difficulty, round, topic, question_type, options) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [text, answer, category, difficulty, round, topic, question_type, options]
@@ -66,5 +72,9 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Error adding question:', error);
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

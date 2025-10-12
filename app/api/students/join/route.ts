@@ -12,6 +12,7 @@ const joinSessionSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  let connection;
   try {
     const body = await req.json();
     
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     const { student_id, session_id } = validationResult.data;
 
-    const connection = await getConnection();
+    connection = await getConnection();
 
     // Check if session exists and is active
     const [sessionRows] = (await connection.execute(
@@ -76,5 +77,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error joining session:", error);
     return errorResponse("Internal server error", 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

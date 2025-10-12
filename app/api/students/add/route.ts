@@ -10,6 +10,7 @@ const studentSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  let connection;
   try {
     const body = await req.json();
     
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
 
     const { student_id, name, department_id } = validationResult.data;
 
-    const connection = await getConnection();
+    connection = await getConnection();
     const [result] = await connection.execute(
       'INSERT INTO students (student_id, name, department_id) VALUES (?, ?, ?)',
       [student_id, name, department_id]
@@ -37,5 +38,9 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Error adding student:', error); // More specific error logging
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

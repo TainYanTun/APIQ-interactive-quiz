@@ -11,8 +11,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
     await connection.execute(
       "UPDATE sessions SET is_active = ? WHERE id = ?",
       [is_active, session_id]
@@ -24,5 +25,9 @@ export async function POST(req: NextRequest) {
       { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

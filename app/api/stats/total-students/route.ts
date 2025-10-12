@@ -6,8 +6,9 @@ interface TotalStudentsResult {
 }
 
 export async function GET() {
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
     const [rows] = (await connection.execute(
       "SELECT COUNT(*) as total_students FROM students"
     )) as TotalStudentsResult[];
@@ -19,5 +20,9 @@ export async function GET() {
       { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

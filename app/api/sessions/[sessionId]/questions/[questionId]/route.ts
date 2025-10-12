@@ -3,11 +3,12 @@ import { successResponse, errorResponse } from '@/lib/apiResponse';
 import { ResultSetHeader } from 'mysql2';
 
 export async function DELETE(request: Request, { params }: { params: { sessionId: string, questionId: string } }) {
+  let connection;
   try {
     const sessionId = params.sessionId;
     const questionId = params.questionId;
 
-    const connection = await getConnection();
+    connection = await getConnection();
     const [result] = await connection.execute(
       'DELETE FROM session_questions WHERE session_id = ? AND question_id = ?',
       [sessionId, questionId]
@@ -21,5 +22,9 @@ export async function DELETE(request: Request, { params }: { params: { sessionId
   } catch (error) {
     console.error('Error removing question from session:', error);
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

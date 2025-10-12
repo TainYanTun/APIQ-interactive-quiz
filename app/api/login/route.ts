@@ -13,6 +13,7 @@ const loginSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  let connection;
   try {
     const body = await req.json();
     
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const { username, password } = validationResult.data;
 
-    const connection = await getConnection();
+    connection = await getConnection();
     const [rows] = (await connection.execute(
       "SELECT id, username, password FROM admins WHERE username = ?",
       [username]
@@ -53,5 +54,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error during login:", error);
     return errorResponse("Internal server error", 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

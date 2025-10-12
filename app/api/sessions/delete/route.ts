@@ -11,8 +11,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
     // First, delete participants of the session
     await connection.execute(
       "DELETE FROM session_participants WHERE session_id = ?",
@@ -28,5 +29,9 @@ export async function POST(req: NextRequest) {
       { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }

@@ -10,6 +10,7 @@ const deleteStudentSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  let connection;
   try {
     const body = await req.json();
     
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
 
     const { id } = validationResult.data;
 
-    const connection = await getConnection();
+    connection = await getConnection();
     
     const [result] = await connection.execute('UPDATE students SET is_active = 0 WHERE id = ?', [id]);
     
@@ -40,5 +41,9 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Error deleting student:', error);
     return errorResponse('Internal server error', 500);
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
