@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import SessionCard from '@/components/SessionCard';
 
@@ -15,11 +16,16 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [qrCodeValue, setQrCodeValue] = useState<string | null>(null);
+  const router = useRouter();
 
   async function fetchSessions() {
     try {
       setLoading(true);
       const response = await fetch('/api/sessions');
+      if (response.status === 401) {
+        router.push('/login'); // Redirect to login page
+        return;
+      }
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }

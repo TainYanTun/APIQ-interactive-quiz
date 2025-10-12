@@ -3,16 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 
 interface Score {
-  student_id: string;
   name: string;
   score: number;
 }
 
 interface ScoreboardProps {
   sessionId: string;
+  scoringMode: 'individual' | 'department';
 }
 
-export default function Scoreboard({ sessionId }: ScoreboardProps) {
+export default function Scoreboard({ sessionId, scoringMode }: ScoreboardProps) {
   const [scores, setScores] = useState<Score[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export default function Scoreboard({ sessionId }: ScoreboardProps) {
   const fetchScores = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/sessions/${sessionId}/scores`); // Assuming this API exists
+      const response = await fetch(`/api/sessions/${sessionId}/scores?mode=${scoringMode}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(`Error: ${response.status} - ${errorData.message || response.statusText}`);
@@ -33,11 +33,11 @@ export default function Scoreboard({ sessionId }: ScoreboardProps) {
     } finally {
       setLoading(false);
     }
-  }, [sessionId, setLoading, setError, setScores]);
+  }, [sessionId, scoringMode, setLoading, setError, setScores]);
 
   useEffect(() => {
     fetchScores();
-  }, [sessionId, fetchScores]);
+  }, [sessionId, scoringMode, fetchScores]);
 
   return (
     <div className="space-y-4">
@@ -58,7 +58,7 @@ export default function Scoreboard({ sessionId }: ScoreboardProps) {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {(Array.isArray(scores) ? [...scores] : []).sort((a, b) => b.score - a.score).map((score, index) => (
-                <tr key={score.student_id}>
+                <tr key={score.name}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{score.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{score.score}</td>

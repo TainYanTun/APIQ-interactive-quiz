@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -13,6 +12,7 @@ interface Question {
 
 interface QuizState {
   isQuizStarted: boolean;
+  isQuizEnded: boolean;
   scoringMode: 'individual' | 'department';
   isBuzzerActive: boolean;
   activeStudent: string | null;
@@ -23,7 +23,12 @@ interface QuizState {
   showAnswer: boolean;
 }
 
-export default function QuizControl({ sessionId }: { sessionId: string }) {
+interface QuizControlProps {
+  sessionId: string;
+  onScoringModeChange?: (mode: 'individual' | 'department') => void;
+}
+
+export default function QuizControl({ sessionId, onScoringModeChange }: QuizControlProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,37 +65,65 @@ export default function QuizControl({ sessionId }: { sessionId: string }) {
 
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (['QUIZ_STATE', 'QUIZ_STARTED', 'BUZZER_ACTIVATED', 'SCORES_UPDATED', 'NEW_QUESTION', 'TIMER_UPDATE', 'BUZZER_OPEN'].includes(data.type)) {
+      if (['QUIZ_STATE', 'QUIZ_STARTED', 'BUZZER_ACTIVATED', 'SCORES_UPDATED', 'NEW_QUESTION', 'TIMER_UPDATE', 'BUZZER_OPEN', 'QUIZ_ENDED'].includes(data.type)) {
         setQuizState(data.payload);
+        if (data.payload.scoringMode && onScoringModeChange) {
+          onScoringModeChange(data.payload.scoringMode);
+        }
       }
     };
 
     ws.current.onclose = (event) => {
       console.log('WebSocket disconnected:', event);
       setIsConnected(false);
+      // Attempt to reconnect after a delay
+      setTimeout(() => {
+        console.log('Attempting to reconnect WebSocket...');
+        // Re-initialize WebSocket connection
+        if (ws.current) {
+          ws.current.close(); // Ensure previous connection is closed
+        }
+        const wsUrl = `ws://${window.location.hostname}:3001`;
+        ws.current = new WebSocket(wsUrl);
+      }, 3000); // Reconnect after 3 seconds
     };
 
     ws.current.onerror = (error) => {
       console.error('WebSocket error details:', error);
+      // The onerror event is usually followed by onclose, so reconnection logic is primarily in onclose
     };
 
     return () => {
       ws.current?.close();
     };
-  }, [sessionId]);
+  }, [sessionId, onScoringModeChange]);
 
   const sendCommand = (type: string, payload = {}) => {
     ws.current?.send(JSON.stringify({ type, payload: { ...payload, sessionId } }));
   };
 
+  const handleNextQuestion = () => {
+    if (!quizState) return;
+    const nextQuestionIndex = quizState.currentQuestionIndex + 1;
+    const nextQuestion = questions[nextQuestionIndex];
+    if (nextQuestion) {
+      sendCommand('NEXT_QUESTION', { questionId: nextQuestion.id });
+    } else {
+      sendCommand('NEXT_QUESTION');
+    }
+  };
+
   const handleJudgeAnswer = (correct: boolean) => {
     if (quizState?.activeStudent) {
-      sendCommand('JUDGE_ANSWER', { correct });
+      sendCommand('JUDGE_ANSWER', { correct, questionId: questions[quizState.currentQuestionIndex]?.id });
     }
   };
 
   const handleScoringModeChange = (mode: 'individual' | 'department') => {
     sendCommand('SET_SCORING_MODE', { mode });
+    if (onScoringModeChange) {
+      onScoringModeChange(mode);
+    }
   };
 
   const openPresentationView = () => {
@@ -102,6 +135,7 @@ export default function QuizControl({ sessionId }: { sessionId: string }) {
   }
 
   const currentQuestion = questions[quizState?.currentQuestionIndex ?? 0];
+  const isQuizEnded = quizState?.isQuizEnded; // Use the isQuizEnded from quizState
 
   return (
     <div className="container mx-auto p-4">
@@ -115,7 +149,7 @@ export default function QuizControl({ sessionId }: { sessionId: string }) {
               value={quizState?.scoringMode || 'individual'}
               onChange={(e) => handleScoringModeChange(e.target.value as 'individual' | 'department')}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              disabled={quizState?.isQuizStarted}
+              disabled={Boolean(quizState?.isQuizStarted)}
             >
               <option value="individual">Individual</option>
               <option value="department">Department</option>
@@ -128,7 +162,9 @@ export default function QuizControl({ sessionId }: { sessionId: string }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h2 className="text-2xl font-bold mb-4">Question</h2>
-          {quizState?.isQuizStarted ? (
+          {isQuizEnded ? (
+            <p className="text-xl font-bold">Quiz Ended!</p>
+          ) : quizState?.isQuizStarted ? (
             currentQuestion ? (
               <div>
                 <p className="text-lg">Q{quizState?.currentQuestionIndex + 1}: {currentQuestion.text}</p>
@@ -141,13 +177,22 @@ export default function QuizControl({ sessionId }: { sessionId: string }) {
             <p>Quiz has not started yet.</p>
           )}
           <div className="mt-4 space-x-2">
-            {!quizState?.isQuizStarted ? (
-              <Button onClick={() => sendCommand('START_QUIZ')} disabled={!isConnected || !quizState}>
+            {isQuizEnded ? (
+              <Button onClick={() => sendCommand('START_NEW_ROUND')} className="ml-2">
+                Start New Round
+              </Button>
+            ) : Boolean(!quizState?.isQuizStarted && !isQuizEnded) ? (
+              <Button onClick={() => sendCommand('START_QUIZ')} disabled={Boolean(!isConnected || !quizState)}>
                 Start Quiz
               </Button>
             ) : (
-              <Button onClick={() => sendCommand('NEXT_QUESTION')} disabled={!quizState?.isQuizStarted || quizState.currentQuestionIndex >= questions.length - 1 || !!quizState.activeStudent}>
+              <Button onClick={handleNextQuestion} disabled={Boolean(!quizState?.isQuizStarted || quizState.currentQuestionIndex >= questions.length - 1 || !!quizState.activeStudent || isQuizEnded)}>
                 Next Question
+              </Button>
+            )}
+            {Boolean(quizState?.isQuizStarted && !isQuizEnded) && (
+              <Button onClick={() => sendCommand('END_QUIZ')} variant="destructive" className="ml-2">
+                End Quiz
               </Button>
             )}
           </div>
@@ -161,8 +206,8 @@ export default function QuizControl({ sessionId }: { sessionId: string }) {
               <p>Buzzer Active: {quizState.isBuzzerActive ? 'YES' : 'NO'}</p>
               <p>Active Student: {quizState.activeStudent || 'None'}</p>
               <div className="flex items-center space-x-2 mt-2">
-                <Button onClick={() => handleJudgeAnswer(true)} disabled={!quizState.activeStudent}>Correct</Button>
-                <Button onClick={() => handleJudgeAnswer(false)} variant="destructive" disabled={!quizState.activeStudent}>Incorrect</Button>
+                <Button onClick={() => handleJudgeAnswer(true)} disabled={Boolean(quizState.activeStudent === null || isQuizEnded)}>Correct</Button>
+                <Button onClick={() => handleJudgeAnswer(false)} variant="destructive" disabled={Boolean(quizState.activeStudent === null || isQuizEnded)}>Incorrect</Button>
               </div>
               <p className="mt-2">Ineligible Students: {quizState.ineligibleStudents.join(', ')}</p>
             </div>

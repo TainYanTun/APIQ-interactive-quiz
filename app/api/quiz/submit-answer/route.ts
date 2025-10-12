@@ -1,4 +1,3 @@
-
 import { getConnection } from "@/utils/db";
 import { successResponse, errorResponse } from "@/lib/apiResponse";
 import { getSession } from "@/lib/session";
@@ -11,8 +10,9 @@ const submitAnswerSchema = z.object({
   answer: z.string(),
 });
 
-interface QuestionAnswer extends RowDataPacket {
+interface QuestionInfo extends RowDataPacket {
   answer: string;
+  round: number;
 }
 
 export async function POST(request: Request) {
@@ -38,24 +38,32 @@ export async function POST(request: Request) {
 
     const connection = await getConnection();
 
-    // Get the correct answer
-    const [answerRows] = await connection.execute<QuestionAnswer[]>(
-      "SELECT answer FROM questions_bank WHERE id = ?",
+    // Get the correct answer and round
+    const [questionRows] = await connection.execute<QuestionInfo[]>(
+      "SELECT answer, round FROM questions_bank WHERE id = ?",
       [questionId]
     );
 
-    if (answerRows.length === 0) {
+    if (questionRows.length === 0) {
       return errorResponse("Question not found", 404);
     }
 
-    const correctAnswer = answerRows[0].answer;
+    const { answer: correctAnswer, round } = questionRows[0];
     const score = answer === correctAnswer ? 10 : 0;
 
-    // Save the score
-    await connection.execute(
-      "INSERT INTO question_scores (student_id, session_id, question_id, score) VALUES (?, ?, ?, ?)",
-      [studentId, sessionId, questionId, score]
-    );
+    if (score > 0) {
+        // Save the per-question score for analytics
+        await connection.execute(
+            "INSERT INTO student_question_scores (student_id, session_id, question_id, score) VALUES (?, ?, ?, ?)",
+            [studentId, sessionId, questionId, score]
+        );
+
+        // Save the per-round score for efficient querying
+        await connection.execute(
+            'INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)',
+            [sessionId, studentId, round, score]
+        );
+    }
 
     return successResponse(
       { correct: score > 0, score },

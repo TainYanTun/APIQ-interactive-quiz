@@ -26,6 +26,7 @@ export default function StudentQuizPage() {
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [loading, setLoading] = useState(true);
   const ws = useRef<WebSocket | null>(null);
+  const [quizEnded, setQuizEnded] = useState(false);
 
   useEffect(() => {
     async function fetchSession() {
@@ -61,6 +62,9 @@ export default function StudentQuizPage() {
       const data = JSON.parse(event.data);
       if (['QUIZ_STATE', 'QUIZ_STARTED', 'BUZZER_ACTIVATED', 'SCORES_UPDATED', 'NEW_QUESTION', 'TIMER_UPDATE', 'BUZZER_OPEN'].includes(data.type)) {
         setQuizState(data.payload);
+      } else if (data.type === 'QUIZ_ENDED') {
+        setQuizState(data.payload);
+        setQuizEnded(true);
       }
     };
 
@@ -87,6 +91,28 @@ export default function StudentQuizPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <p>You have not joined a quiz session.</p>
+      </div>
+    );
+  }
+
+  if (quizEnded) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4">
+        <div className="w-full max-w-2xl text-center">
+          <h1 className="text-4xl font-bold mb-4">Quiz Ended!</h1>
+          <h2 className="text-2xl font-bold mb-4">Final Scores</h2>
+          {quizState?.scores ? (
+            <ul>
+              {Object.entries(quizState.scores).map(([name, score]) => (
+                <li key={name} className={quizState.scoringMode === 'individual' && name === session.studentId ? 'font-bold' : ''}>
+                  {quizState.scoringMode === 'individual' && name === session.studentId ? 'You' : name}: {score}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No final scores available.</p>
+          )}
+        </div>
       </div>
     );
   }

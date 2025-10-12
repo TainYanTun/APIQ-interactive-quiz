@@ -34,17 +34,7 @@ CREATE TABLE IF NOT EXISTS session_participants (
     UNIQUE(student_id, session_id)
 );
 
--- 5. scores
-CREATE TABLE IF NOT EXISTS scores (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    department_id INT,
-    points INT DEFAULT 0,
-    session_id VARCHAR(50),
-    FOREIGN KEY (department_id) REFERENCES departments(id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id)
-);
-
--- 6. questions_bank
+-- 5. questions_bank
 CREATE TABLE IF NOT EXISTS questions_bank (
     id INT PRIMARY KEY AUTO_INCREMENT,
     text TEXT NOT NULL,
@@ -59,7 +49,7 @@ CREATE TABLE IF NOT EXISTS questions_bank (
     is_active TINYINT(1) DEFAULT 1
 );
 
--- 7. session_questions
+-- 6. session_questions
 CREATE TABLE IF NOT EXISTS session_questions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     session_id VARCHAR(50) NOT NULL,
@@ -69,8 +59,8 @@ CREATE TABLE IF NOT EXISTS session_questions (
     UNIQUE(session_id, question_id)
 );
 
--- 8. question_scores
-CREATE TABLE IF NOT EXISTS question_scores (
+-- 7. question_scores
+CREATE TABLE IF NOT EXISTS student_question_scores (
     id INT PRIMARY KEY AUTO_INCREMENT,
     student_id VARCHAR(50) NOT NULL,
     session_id VARCHAR(50) NOT NULL,
@@ -83,6 +73,33 @@ CREATE TABLE IF NOT EXISTS question_scores (
     UNIQUE(student_id, session_id, question_id)
 );
 
+-- 8. student_round_scores
+CREATE TABLE IF NOT EXISTS student_round_scores (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id VARCHAR(50) NOT NULL,
+    session_id VARCHAR(50) NOT NULL,
+    round INT NOT NULL,
+    score INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    UNIQUE(student_id, session_id, round)
+);
+
+-- 9. department_round_scores
+CREATE TABLE IF NOT EXISTS department_round_scores (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    department_id INT NOT NULL,
+    session_id VARCHAR(50) NOT NULL,
+    round INT NOT NULL,
+    score INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id),
+    UNIQUE(department_id, session_id, round)
+);
+
+-- 10. admins
 CREATE TABLE IF NOT EXISTS admins (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,

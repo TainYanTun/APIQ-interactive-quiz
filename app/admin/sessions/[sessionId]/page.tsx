@@ -36,6 +36,7 @@ export default function SessionParticipantsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'quiz-control' | 'questions' | 'participants' | 'scoreboard'>('quiz-control');
+  const [currentScoringMode, setCurrentScoringMode] = useState<'individual' | 'department'>('individual');
 
   const fetchParticipants = useCallback(async () => {
     try {
@@ -191,6 +192,10 @@ export default function SessionParticipantsPage() {
       console.error('Error adding question to session:', err);
     }
   };
+
+  const handleScoringModeChange = useCallback((mode: 'individual' | 'department') => {
+    setCurrentScoringMode(mode);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -374,12 +379,12 @@ export default function SessionParticipantsPage() {
       )}
       {selectedTab === 'scoreboard' && (
         <div className="bg-white rounded-lg border shadow-sm p-6">
-          <Scoreboard sessionId={sessionId} />
+          <Scoreboard sessionId={sessionId} scoringMode={currentScoringMode} />
         </div>
       )}
       {selectedTab === 'quiz-control' && (
         <div className="bg-white rounded-lg border shadow-sm p-6">
-          <QuizControl sessionId={sessionId} />
+          <QuizControl sessionId={sessionId} onScoringModeChange={handleScoringModeChange} />
         </div>
       )}
     </div>
