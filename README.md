@@ -1,6 +1,6 @@
 # 🧠 APIQ: The Ultimate Interactive Quiz Application
-
-![APIQ Logo](public/logo_readme.svg)
+<br>
+<img src="public/logo_readme.svg" alt="APIQ Logo" width="500" style="margin-top:" />
 
 ## ✨ Unleash the Power of Knowledge and Competition!
 
