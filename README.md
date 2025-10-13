@@ -1,6 +1,6 @@
 # 🧠 APIQ: The Ultimate Interactive Quiz Application
 
-![QuizMaster Banner](https://via.placeholder.com/1200x400?text=QuizMaster+Interactive+Quiz+App)
+![APIQ Logo](public/logo.svg)
 
 ## ✨ Unleash the Power of Knowledge and Competition!
 
