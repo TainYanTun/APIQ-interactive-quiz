@@ -35,7 +35,7 @@ async function retryDbOperation(operation) {
   }
 }
 
-console.log('WebSocket server started on port 3001');
+
 
 wss.on('connection', ws => {
   console.log('Client connected');
@@ -50,6 +50,7 @@ wss.on('connection', ws => {
       const db = await getDbConnection();
       const [rows] = await db.execute('SELECT MAX(round) as max_round FROM student_round_scores WHERE session_id = ?', [sessionId]);
       const initialRound = (rows[0]?.max_round || 0) + 1;
+      console.log(`[${sessionId}] Initializing session.quizState.currentRound to: ${initialRound}`);
 
       sessions[sessionId] = {
         clients: new Set(),
@@ -115,8 +116,8 @@ wss.on('connection', ws => {
             const [rows] = await db.execute('SELECT id FROM departments WHERE name = ?', [departmentName]);
             if (rows.length > 0) {
               const departmentId = rows[0].id;
-              console.log(`[${sessionId}] Department score: departmentId=${departmentId}, round=${currentRound}, score=${score}`);
               await retryDbOperation(async () => {
+                console.log(`[${sessionId}] DB Execute: INSERT INTO department_round_scores (session_id, department_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score) with values: ${sessionId}, ${departmentId}, ${currentRound}, ${score}`);
                 await db.execute('INSERT INTO department_round_scores (session_id, department_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)', [sessionId, departmentId, currentRound, score]);
               });
             }
@@ -126,11 +127,10 @@ wss.on('connection', ws => {
         for (const studentId in roundScores) {
           const score = roundScores[studentId];
           if (score > 0) {
-            console.log(`[${sessionId}] Student score: studentId=${studentId}, round=${currentRound}, score=${score}`);
-            await retryDbOperation(async () => {
-              await db.execute('INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)', [sessionId, studentId, currentRound, score]);
-            });
-          }
+                          await retryDbOperation(async () => {
+                          console.log(`[${sessionId}] DB Execute: INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score) with values: ${sessionId}, ${studentId}, ${currentRound}, ${score}`);
+                          await db.execute('INSERT INTO student_round_scores (session_id, student_id, round, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = score + VALUES(score)', [sessionId, studentId, currentRound, score]);
+                        });          }
         }
       }
     };
@@ -209,12 +209,12 @@ wss.on('connection', ws => {
           if (session.quizState.scoringMode === 'individual') {
             // Analytics write
             await retryDbOperation(async () => {
-              await db.execute('INSERT INTO student_question_scores (session_id, student_id, question_id, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score)', [sessionId, studentId, currentQuestionId, points]);
+              console.log(`[${sessionId}] DB Execute: INSERT INTO student_question_scores (session_id, student_id, question_id, round, score) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score) with values: ${sessionId}, ${studentId}, ${currentQuestionId}, ${session.quizState.currentRound}, ${points}`);
+              await db.execute('INSERT INTO student_question_scores (session_id, student_id, question_id, round, score) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score)', [sessionId, studentId, currentQuestionId, session.quizState.currentRound, points]);
             });
             // Update in-memory scores
             session.quizState.scores[studentId] = (session.quizState.scores[studentId] || 0) + points;
             session.quizState.roundScores[studentId] = (session.quizState.roundScores[studentId] || 0) + points;
-            console.log(`[${sessionId}] After JUDGE_ANSWER (individual): roundScores=`, session.quizState.roundScores);
 
           } else { // department scoring
             const [rows] = await db.execute('SELECT d.id, d.name FROM students s JOIN departments d ON s.department_id = d.id WHERE s.student_id = ?', [studentId]);
@@ -223,13 +223,13 @@ wss.on('connection', ws => {
               
               // Analytics write for the individual student
               await retryDbOperation(async () => {
-                await db.execute('INSERT INTO student_question_scores (session_id, student_id, question_id, score) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score)', [sessionId, studentId, currentQuestionId, points]);
+                console.log(`[${sessionId}] DB Execute: INSERT INTO student_question_scores (session_id, student_id, question_id, round, score) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score) with values: ${sessionId}, ${studentId}, ${currentQuestionId}, ${session.quizState.currentRound}, ${points}`);
+                await db.execute('INSERT INTO student_question_scores (session_id, student_id, question_id, round, score) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE score = VALUES(score)', [sessionId, studentId, currentQuestionId, session.quizState.currentRound, points]);
               });
 
               // Update in-memory scores
               session.quizState.scores[department.name] = (session.quizState.scores[department.name] || 0) + points;
               session.quizState.roundScores[department.name] = (session.quizState.roundScores[department.name] || 0) + points;
-              console.log(`[${sessionId}] After JUDGE_ANSWER (department): roundScores=`, session.quizState.roundScores);
             }
           }
           session.quizState.activeStudent = null;
@@ -245,7 +245,7 @@ wss.on('connection', ws => {
         break;
 
       case 'END_QUIZ':
-        console.log(`[${sessionId}] Before saveRoundScores (END_QUIZ): roundScores=`, session.quizState.roundScores);
+        console.log(`[${sessionId}] Before saveRoundScores in END_QUIZ. currentRound: ${session.quizState.currentRound}`);
         await saveRoundScores(); // Save the last round's scores
         clearInterval(session.quizState.timerId);
         const db_end = await getDbConnection();
@@ -270,6 +270,7 @@ wss.on('connection', ws => {
         break;
 
       case 'START_NEW_ROUND':
+        console.log(`[${sessionId}] Before saveRoundScores in START_NEW_ROUND. currentRound: ${session.quizState.currentRound}`);
         await saveRoundScores();
         session.quizState.roundScores = {}; // Reset for new round
         clearInterval(session.quizState.timerId);
@@ -282,6 +283,7 @@ wss.on('connection', ws => {
         session.quizState.activeStudent = null;
         session.quizState.currentQuestionIndex = 0;
         session.quizState.currentRound += 1;
+        console.log(`[${sessionId}] After incrementing currentRound in START_NEW_ROUND. currentRound: ${session.quizState.currentRound}`);
         session.quizState.remainingTime = 10000;
         session.quizState.ineligibleStudents = [];
         session.quizState.showAnswer = false;

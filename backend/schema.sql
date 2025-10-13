@@ -66,12 +66,13 @@ CREATE TABLE IF NOT EXISTS student_question_scores (
     student_id VARCHAR(50) NOT NULL,
     session_id VARCHAR(50) NOT NULL,
     question_id INT NOT NULL,
+    round INT NOT NULL DEFAULT 1,
     score INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(student_id),
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES questions_bank(id),
-    UNIQUE(student_id, session_id, question_id)
+    UNIQUE(student_id, session_id, question_id, round)
 );
 
 -- 8. student_round_scores
