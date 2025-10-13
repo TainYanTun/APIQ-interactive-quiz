@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-  <img src="public/logo_readme.svg" alt="APIQ Logo" width="500" />
+  <img src="public/logo.svg" alt="APIQ Logo" width="500" />
   
   **Transform learning and assessment with real-time, interactive quizzes**
   

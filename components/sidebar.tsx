@@ -1,11 +1,11 @@
 import { 
   Play, 
-  Box, 
+  BadgeQuestionMark, 
   BookOpen, 
   Settings, 
   ChevronRight,
   Building2,
-  PersonStandingIcon
+  BookUser
 } from "lucide-react"
 import Link from "next/link"
 
@@ -32,7 +32,7 @@ const platformItems = [
   {
     title: "Questions",
     url: "/admin/questions",
-    icon: Box,
+    icon: BadgeQuestionMark,
   },
   {
     title: "Sessions",
@@ -41,7 +41,7 @@ const platformItems = [
   },
   { title: "Students",
     url: "/admin/studentmag",
-    icon: PersonStandingIcon
+    icon: BookUser
   },
   {
     title: "Settings",

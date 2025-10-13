@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -35,15 +36,30 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md">
+    <div className="relative flex items-center justify-center min-h-screen bg-white overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Floating circles */}
+        <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-indigo-100 opacity-50 animate-pulse-slow"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-purple-100 opacity-40 animate-pulse-slow animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/4 w-48 h-48 rounded-full bg-blue-100 opacity-45 animate-pulse-slow animation-delay-4000"></div>
+        
+        {/* Floating shapes */}
+        <div className="absolute top-1/3 right-1/4 w-16 h-16 rounded-lg bg-indigo-200 opacity-50 animate-float animation-delay-1000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-12 h-12 rounded-lg bg-purple-200 opacity-50 animate-float animation-delay-3000"></div>
+        <div className="absolute top-1/4 right-1/3 w-20 h-20 rounded-lg bg-blue-200 opacity-50 animate-float animation-delay-5000"></div>
+        
+        {/* Additional floating elements */}
+        <div className="absolute top-1/5 left-2/3 w-24 h-24 rounded-full bg-indigo-50 opacity-60 animate-float animation-delay-1500"></div>
+        <div className="absolute bottom-1/3 right-1/5 w-32 h-32 rounded-full bg-purple-50 opacity-60 animate-float animation-delay-3500"></div>
+      </div>
+      
+      <div className="w-full max-w-md relative z-10">
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
           {/* Header */}
           <div className="p-6 border-b border-gray-200 text-center">
-            <div className="mx-auto w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+            <div className="mx-auto w-50 h-50 mb-4">
+              <Image src="/icon.svg" alt="APIQ Logo" width={1000} height={1000} />
             </div>
             <h1 className="text-xl font-semibold text-gray-900">Welcome Back</h1>
             <p className="text-sm text-gray-600 mt-1">Sign in to your account to continue</p>
@@ -110,6 +126,44 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      
+      <style jsx global>{`
+        @keyframes pulse-slow {
+          0%, 100% { transform: scale(1); opacity: 0.4; }
+          50% { transform: scale(1.1); opacity: 0.6; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-30px) rotate(10deg); }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .animate-float {
+          animation: float 10s ease-in-out infinite;
+        }
+        .animation-delay-1000 {
+          animation-delay: 1s;
+        }
+        .animation-delay-1500 {
+          animation-delay: 1.5s;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-3000 {
+          animation-delay: 3s;
+        }
+        .animation-delay-3500 {
+          animation-delay: 3.5s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        .animation-delay-5000 {
+          animation-delay: 5s;
+        }
+      `}</style>
     </div>
   );
 }
