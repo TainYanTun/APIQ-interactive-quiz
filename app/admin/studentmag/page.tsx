@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 interface Student {
   id: number;
@@ -22,19 +23,25 @@ export default function StudentManagementPage() {
   const [showModal, setShowModal] = useState(false);
   const [newStudent, setNewStudent] = useState({ student_id: '', name: '', department_id: '' });
   const [filterStatus, setFilterStatus] = useState<'active' | 'inactive' | 'all'>('active');
+  const searchParams = useSearchParams();
+  const departmentId = searchParams.get('departmentId');
 
   const fetchStudents = useCallback(async () => {
     try {
-      let url = '/api/students';
+      const url = new URL('/api/students', window.location.origin);
       if (filterStatus === 'active') {
-        url += '?is_active=1';
+        url.searchParams.append('is_active', '1');
       } else if (filterStatus === 'inactive') {
-        url += '?is_active=0';
+        url.searchParams.append('is_active', '0');
       } else if (filterStatus === 'all') {
-        url += '?is_active=all';
+        url.searchParams.append('is_active', 'all');
       }
 
-      const res = await fetch(url);
+      if (departmentId) {
+        url.searchParams.append('departmentId', departmentId);
+      }
+
+      const res = await fetch(url.toString());
       const responseData = await res.json();
 
       if (res.ok) {
@@ -49,7 +56,7 @@ export default function StudentManagementPage() {
       setStudents([]);
       alert('Failed to fetch students due to a network error.');
     }
-  }, [filterStatus]);
+  }, [filterStatus, departmentId]);
 
   async function fetchDepartments() {
     const res = await fetch('/api/departments');

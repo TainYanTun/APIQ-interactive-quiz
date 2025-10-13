@@ -17,7 +17,13 @@ async function getActiveSessions(): Promise<number> {
 async function getTotalStudents(): Promise<number> {
   const response = await fetch(`${BASE_URL}/api/stats/total-students`, { cache: 'no-store' });
   const data = await response.json();
-  return data.total_students;
+  return data.data.total_students;
+}
+
+async function getTotalDepartments(): Promise<number> {
+  const response = await fetch(`${BASE_URL}/api/stats/total-departments`, { cache: 'no-store' });
+  const data = await response.json();
+  return data.total_departments;
 }
 
 export default async function AdminDashboard() {
@@ -31,12 +37,8 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Total Questions" fetchData={getTotalQuestions} color="text-blue-600" />
         <StatCard title="Active Sessions" fetchData={getActiveSessions} color="text-green-600" />
-        <StatCard title="Total Students" fetchData={getTotalStudents} color="text-purple-600" />
-        
-        <div className="bg-white p-6 rounded-lg border shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900">Completed Quizzes</h3>
-          <p className="text-3xl font-bold text-orange-600">1,205</p>
-        </div>
+        <StatCard title="Departments" fetchData={getTotalDepartments} color="text-purple-600" />
+        <StatCard title="Total Students" fetchData={getTotalStudents} color="text-orange-600" />
       </div>
       
       <div className="bg-white rounded-lg border shadow-sm">
