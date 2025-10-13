@@ -1,4 +1,6 @@
-# APIQ: The Ultimate Interactive Quiz Platform
+<div align="center">
+  <h1>APIQ: The Ultimate Interactive Quiz Platform</h1>
+</div>
 
 <div align="center">
   <img src="public/logo_readme.svg" alt="APIQ Logo" width="500" />
