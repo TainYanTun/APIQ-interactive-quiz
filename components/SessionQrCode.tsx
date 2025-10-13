@@ -11,7 +11,7 @@ const SessionQrCode: React.FC<SessionQrCodeProps> = ({ sessionId }) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setJoinUrl(`${window.location.origin}/join?sessionId=${sessionId}`);
+      setJoinUrl(`${window.location.origin}/join?session_id=${sessionId}`);
     }
   }, [sessionId]);
 

@@ -251,7 +251,7 @@ export default function SessionParticipantsPage() {
           </p>
         </div>
         <div className="flex-shrink-0">
-          <SessionQrCode sessionId={sessionId} />
+          {sessionId && <SessionQrCode sessionId={sessionId} />}
         </div>
       </div>
 

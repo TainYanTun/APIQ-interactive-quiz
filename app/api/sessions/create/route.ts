@@ -17,18 +17,22 @@ export async function POST(req: Request) {
   }
 
   let connection;
+  let name = "";
   try {
     const body = await req.json();
     const validationResult = createSessionSchema.safeParse(body);
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { message: "Validation Error", errors: validationResult.error.flatten().fieldErrors },
+        {
+          message: "Validation Error",
+          errors: validationResult.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
 
-    const { name } = validationResult.data;
+    name = validationResult.data.name;
 
     connection = await getConnection();
     const sessionId = randomBytes(16).toString("hex");
@@ -38,8 +42,16 @@ export async function POST(req: Request) {
     ]);
 
     return NextResponse.json({ sessionId, name });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    if (error.code === "ER_DUP_ENTRY") {
+      return NextResponse.json(
+        {
+          message: `Duplicate entry: A session with the name '${name}' already exists.`,
+        },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
