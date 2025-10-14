@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
 
     const { session_id, is_active, name } = validationResult.data;
 
-    let updateFields: string[] = [];
-    let updateValues: (boolean | string)[] = [];
+    const updateFields: string[] = [];
+    const updateValues: (boolean | string)[] = [];
 
     if (is_active !== undefined) {
       updateFields.push("is_active = ?");

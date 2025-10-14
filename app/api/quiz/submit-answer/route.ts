@@ -68,15 +68,6 @@ export async function POST(request: Request) {
 
     const { answer: correctAnswer } = questionRows[0];
     const newScoreForQuestion = answer === correctAnswer ? 9 : 0; // Changed from 10 to 9
-    const isCorrect = newScoreForQuestion > 0;
-
-    // Get the existing score for this specific question
-    const [existingQuestionScoreRows] = await connection.execute<StudentQuestionScore[]>(
-      "SELECT score FROM student_question_scores WHERE student_id = ? AND session_id = ? AND question_id = ?",
-      [studentId, sessionId, questionId]
-    );
-
-    const oldScoreForQuestion = existingQuestionScoreRows.length > 0 ? existingQuestionScoreRows[0].score : 0;
 
     // Update or insert the student's score for the current question
     await connection.execute(

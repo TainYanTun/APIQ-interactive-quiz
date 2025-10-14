@@ -27,6 +27,26 @@ export default function PresentationPage() {
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [loading, setLoading] = useState(true);
   const ws = useRef<WebSocket | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/sounds/Quiz Timer Music.mp3');
+      audioRef.current.loop = true;
+    }
+
+    if (quizState?.isBuzzerActive && quizState.remainingTime > 0) {
+      audioRef.current.play().catch(error => console.error("Audio play failed:", error));
+    } else {
+      audioRef.current.pause();
+    }
+  }, [quizState?.isBuzzerActive, quizState?.remainingTime]);
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, []);
 
   useEffect(() => {
     async function fetchQuestions() {

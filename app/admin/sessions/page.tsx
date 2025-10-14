@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import SessionCard from '@/components/SessionCard';
@@ -24,7 +24,7 @@ export default function SessionsPage() {
   const [newSessionName, setNewSessionName] = useState('');
   const router = useRouter();
 
-  async function fetchSessions() {
+  const fetchSessions = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/sessions');
@@ -43,11 +43,11 @@ export default function SessionsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [fetchSessions]);
 
   const createSession = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +76,7 @@ export default function SessionsPage() {
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
-        } catch (e) {
+        } catch {
           // Not a JSON response
         }
         throw new Error(errorMessage);

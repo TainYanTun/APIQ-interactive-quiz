@@ -59,8 +59,6 @@ export default function SessionParticipantsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'quiz-control' | 'questions' | 'participants' | 'scoreboard'>('quiz-control');
   const [currentScoringMode, setCurrentScoringMode] = useState<'individual' | 'department'>('individual');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [showScores, setShowScores] = useState<boolean>(true);
 
   const fetchSessionDetails = useCallback(async () => {
     try {
@@ -473,7 +471,6 @@ export default function SessionParticipantsPage() {
             <Scoreboard
               sessionId={sessionId}
               scoringMode={currentScoringMode}
-              showScores={showScores}
             />
           </div>
         )}

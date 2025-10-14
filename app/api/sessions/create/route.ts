@@ -42,9 +42,9 @@ export async function POST(req: Request) {
     ]);
 
     return NextResponse.json({ sessionId, name });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    if (error.code === "ER_DUP_ENTRY") {
+    if (error && typeof error === 'object' && 'code' in error && error.code === "ER_DUP_ENTRY") {
       return NextResponse.json(
         {
           message: `Duplicate entry: A session with the name '${name}' already exists.`,

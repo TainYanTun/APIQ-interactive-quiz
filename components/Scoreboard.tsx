@@ -10,10 +10,9 @@ interface Score {
 interface ScoreboardProps {
   sessionId: string;
   scoringMode: 'individual' | 'department';
-  showScores: boolean;
 }
 
-export default function Scoreboard({ sessionId, scoringMode, showScores }: ScoreboardProps) {
+export default function Scoreboard({ sessionId, scoringMode }: ScoreboardProps) {
   const [scores, setScores] = useState<Score[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +44,7 @@ export default function Scoreboard({ sessionId, scoringMode, showScores }: Score
     fetchScores();
   }, [sessionId, scoringMode, fetchScores]);
 
-  console.log('Scoreboard current state - loading:', loading, 'error:', error, 'scores count:', scores.length, 'showScores:', showScores);
+  console.log('Scoreboard current state - loading:', loading, 'error:', error, 'scores count:', scores.length);
 
   const getRankBadge = (rank: number) => {
     if (rank === 1) return 'bg-amber-100 text-amber-800';
@@ -72,78 +71,76 @@ export default function Scoreboard({ sessionId, scoringMode, showScores }: Score
         </span>
       </div>
 
-      {showScores && (
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-              <p className="mt-2 text-sm text-gray-500">Loading scores...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="mt-2 text-sm text-red-600">Error: {error}</p>
-            </div>
-          ) : sortedScores.length === 0 ? (
-            <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <p className="mt-2 text-sm text-gray-500">No scores available yet.</p>
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rank
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {scoringMode === 'individual' ? 'Name' : 'Department'}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Score
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sortedScores.map((score, index) => {
-                  const rank = index + 1;
-                  const rankIcon = getRankIcon(rank);
-                  
-                  return (
-                    <tr 
-                      key={score.name} 
-                      className={`transition-colors ${rank <= 3 ? 'bg-gradient-to-r from-gray-50 to-white' : 'hover:bg-gray-50'}`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {rankIcon && <span className="text-lg">{rankIcon}</span>}
-                          <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${getRankBadge(rank)}`}>
-                            {rank}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-medium ${rank <= 3 ? 'text-gray-900' : 'text-gray-700'}`}>
-                          {score.name}
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <p className="mt-2 text-sm text-gray-500">Loading scores...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <svg className="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="mt-2 text-sm text-red-600">Error: {error}</p>
+          </div>
+        ) : sortedScores.length === 0 ? (
+          <div className="text-center py-12">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p className="mt-2 text-sm text-gray-500">No scores available yet.</p>
+          </div>
+        ) : (
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rank
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {scoringMode === 'individual' ? 'Name' : 'Department'}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Score
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sortedScores.map((score, index) => {
+                const rank = index + 1;
+                const rankIcon = getRankIcon(rank);
+                
+                return (
+                  <tr 
+                    key={score.name} 
+                    className={`transition-colors ${rank <= 3 ? 'bg-gradient-to-r from-gray-50 to-white' : 'hover:bg-gray-50'}`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        {rankIcon && <span className="text-lg">{rankIcon}</span>}
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${getRankBadge(rank)}`}>
+                          {rank}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <span className={`text-lg font-bold ${rank === 1 ? 'text-amber-600' : rank === 2 ? 'text-gray-600' : rank === 3 ? 'text-orange-600' : 'text-gray-500'}`}>
-                          {score.score}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`text-sm font-medium ${rank <= 3 ? 'text-gray-900' : 'text-gray-700'}`}>
+                        {score.name}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <span className={`text-lg font-bold ${rank === 1 ? 'text-amber-600' : rank === 2 ? 'text-gray-600' : rank === 3 ? 'text-orange-600' : 'text-gray-500'}`}>
+                        {score.score}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

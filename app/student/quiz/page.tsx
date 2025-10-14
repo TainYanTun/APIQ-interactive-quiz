@@ -28,6 +28,11 @@ export default function StudentQuizPage() {
   const [loading, setLoading] = useState(true);
   const ws = useRef<WebSocket | null>(null);
   const [quizEnded, setQuizEnded] = useState(false);
+  const buzzSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    buzzSoundRef.current = new Audio('/sounds/Button Sound Effects 8.mp3');
+  }, []);
 
   useEffect(() => {
     async function fetchSession() {
@@ -80,6 +85,7 @@ export default function StudentQuizPage() {
 
   const handleBuzz = () => {
     if (quizState?.isBuzzerActive && !quizState.ineligibleStudents.includes(session?.studentId ?? '')) {
+      buzzSoundRef.current?.play();
       ws.current?.send(JSON.stringify({ type: 'BUZZ', payload: { sessionId: session?.quizSessionId, studentId: session?.studentId, currentRound: quizState.currentRound } }));
     }
   };

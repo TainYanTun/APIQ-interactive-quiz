@@ -33,6 +33,13 @@ export default function QuizControl({ sessionId, onScoringModeChange }: QuizCont
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
   const ws = useRef<WebSocket | null>(null);
+  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
+  const incorrectSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    correctSoundRef.current = new Audio('/sounds/Correct Tick Sound Effect.mp3');
+    incorrectSoundRef.current = new Audio('/sounds/Wrong Tick Sound Effect.mp3');
+  }, []);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -109,6 +116,11 @@ export default function QuizControl({ sessionId, onScoringModeChange }: QuizCont
 
   const handleJudgeAnswer = (correct: boolean) => {
     if (quizState?.activeStudent) {
+      if (correct) {
+        correctSoundRef.current?.play();
+      } else {
+        incorrectSoundRef.current?.play();
+      }
       sendCommand('JUDGE_ANSWER', { correct, questionId: questions[quizState.currentQuestionIndex]?.id });
     }
   };
