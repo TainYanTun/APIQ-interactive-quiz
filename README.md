@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>APIQ: The Ultimate Interactive Quiz Platform</h1>
+  <h1>Advanced Platform for Interactive Quizzes</h1>
 </div>
 
 <div align="center">
