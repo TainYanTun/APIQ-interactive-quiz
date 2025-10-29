@@ -92,8 +92,8 @@ Ensure you have the following installed:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/quiz-app.git
-   cd quiz-app
+   git clone https://github.com/tainyantun/APIQ-interactive-quiz.git
+   cd APIQ-interactive-quiz
    ```
 
 2. **Install dependencies:**
@@ -103,28 +103,11 @@ Ensure you have the following installed:
 
 3. **Set up environment variables:**
    
-   Create a `.env.local` file in the project root:
-   ```env
-   # Database Configuration
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=your_password
-   DB_DATABASE=quiz_app
-   
-   # Redis Configuration
-   REDIS_HOST=localhost
-   REDIS_PORT=6379
-   REDIS_PASSWORD=
-   
-   # Application URLs
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   WEBSOCKET_URL=ws://localhost:3001
-   
-   # Admin Credentials (for initial setup)
-   ADMIN_EMAIL=admin@example.com
-   ADMIN_PASSWORD=your_secure_password
+   Create a `.env` file in the project root by copying the sample file:
+   ```bash
+   cp .env.sample .env
    ```
+   Then, fill in the required values in the `.env` file.
 
 4. **Initialize the database:**
    ```bash
@@ -135,22 +118,15 @@ Ensure you have the following installed:
    mysql -u root -p quiz_app < backend/schema.sql
    
    # (Optional) Populate sample questions
-   npm run seed:questions
+   node populate-questions.js
    ```
 
-5. **Start the development servers:**
+5. **Start the development server:**
 
-   Terminal 1 - Next.js development server:
    ```bash
    npm run dev
    ```
-   The app will be available at `http://localhost:3000`
-
-   Terminal 2 - WebSocket server:
-   ```bash
-   npm run server:ws
-   ```
-   The WebSocket server will run on `ws://localhost:3001`
+   The app will be available at `http://localhost:3000` and the WebSocket server will run on `ws://localhost:3001`.
 
 ---
 
@@ -184,19 +160,15 @@ Display quiz questions and leaderboards on a projector or external screen:
 ## 📁 Project Structure
 
 ```
-quiz-app/
-├── frontend/                 # Next.js application
-│   ├── app/                 # App Router pages
-│   ├── components/          # Reusable React components
-│   ├── hooks/              # Custom React hooks
-│   └── styles/             # Global styles and Tailwind config
-├── backend/                # Node.js WebSocket server
-│   ├── socket-server.mjs   # WebSocket handler
-│   ├── schema.sql          # Database schema
-│   └── middleware/         # Authentication & validation
-├── public/                 # Static assets
-├── .env.local             # Environment variables (not committed)
-└── package.json           # Dependencies and scripts
+APIQ-interactive-quiz/
+├── app/                  # Next.js App Router pages and API routes
+├── backend/              # Database schema
+├── components/           # Reusable React components
+├── public/               # Static assets (images, sounds)
+├── .env.sample           # Sample environment variables
+├── populate-questions.js # Script to seed the database with questions
+├── socket-server.mjs     # WebSocket server
+└── package.json          # Dependencies and scripts
 ```
 
 ---
@@ -206,23 +178,20 @@ quiz-app/
 ### Available Scripts
 
 ```bash
-# Development
-npm run dev                # Start Next.js dev server
-npm run server:ws          # Start WebSocket server
-npm run dev:all            # Run both servers concurrently
+# Run the development server (Next.js and WebSocket)
+npm run dev
 
-# Production
-npm run build              # Build Next.js application
-npm start                  # Start production server
+# Build the Next.js application for production
+npm run build
 
-# Database
-npm run db:migrate         # Run database migrations
-npm run seed:questions     # Populate sample data
+# Start the production Next.js server
+npm start
 
-# Code Quality
-npm run lint               # Run ESLint
-npm run type-check         # TypeScript type checking
-npm run format             # Format code with Prettier
+# Run ESLint to check for code style issues
+npm run lint
+
+# Populate the database with sample questions
+node populate-questions.js
 ```
 
 ### Environment Configuration
@@ -242,7 +211,7 @@ npm run format             # Format code with Prettier
 
 ## 🔒 Security Best Practices
 
-- Keep your `.env.local` file out of version control
+- Keep your `.env` file out of version control
 - Use strong, unique passwords for database and Redis
 - Regularly update dependencies: `npm audit fix`
 - Enable HTTPS in production
@@ -260,7 +229,7 @@ npm run format             # Format code with Prettier
 
 **Database Connection Errors**
 - Confirm MySQL is running and accessible
-- Verify database credentials in `.env.local`
+- Verify database credentials in `.env`
 - Check that the database `quiz_app` exists
 
 **Performance Issues**
@@ -274,30 +243,7 @@ For additional help, open an issue on GitHub with detailed logs and reproduction
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Here's how to get involved:
-
-1. **Fork** the repository on GitHub
-2. **Create** a feature branch:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit** your changes:
-   ```bash
-   git commit -m "feat: Add amazing feature"
-   ```
-4. **Push** to your branch:
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open** a Pull Request with a clear description
-
-### Development Guidelines
-
-- Follow the existing code style
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation as needed
-- Keep PRs focused and reasonably sized
+We welcome contributions from the community! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for more details on how to get involved.
 
 ---
 
@@ -335,5 +281,5 @@ Have questions or need help?
 <div align="center">
   Made with ❤️ for educators and learners everywhere
   
-  <a href="https://github.com/tainyantun/APIQ-interactive-quiz">⭐ Star us on GitHub</a> • <a href="https://twitter.com/apiq](https://x.com/Leo_tainyan">Follow us on X</a>
+  <a href="https://github.com/tainyantun/APIQ-interactive-quiz">⭐ Star us on GitHub</a> • <a href="https://x.com/Leo_tainyan">Follow us on X</a>
 </div>
