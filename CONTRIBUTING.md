@@ -12,18 +12,18 @@ This project and everyone participating in it is governed by the [APIQuiz Code o
 
 ### Reporting Bugs
 
-If you encounter a bug, please [open an issue](https://github.com/YOUR_USERNAME/APIQuiz/issues/new?template=bug_report.md) and provide as much detail as possible.
+If you encounter a bug, please [open an issue](https://github.com/TainYanTun/APIQ-interactive-quiz/issues/new?template=bug_report.md) and provide as much detail as possible.
 
 ### Suggesting Enhancements
 
-If you have an idea for a new feature or an improvement to an existing one, please [open an issue](https://github.com/YOUR_USERNAME/APIQuiz/issues/new?template=feature_request.md) to discuss it.
+If you have an idea for a new feature or an improvement to an existing one, please [open an issue](https://github.com/TainYanTun/APIQ-interactive-quiz/issues/new?template=feature_request.md) to discuss it.
 
 ### Your First Code Contribution
 
 Unsure where to begin contributing to APIQuiz? You can start by looking through these `good-first-issue` and `help-wanted` issues:
 
-- [Good first issues](https://github.com/YOUR_USERNAME/APIQuiz/labels/good%20first%20issue)
-- [Help wanted issues](https://github.com/YOUR_USERNAME/APIQuiz/labels/help%20wanted)
+- [Good first issues](https://github.com/TainYanTun/APIQ-interactive-quiz/labels/good%20first%20issue)
+- [Help wanted issues](https://github.com/TainYanTun/APIQ-interactive-quiz/labels/help%20wanted)
 
 ### Pull Requests
 
@@ -42,11 +42,11 @@ To get the project running locally, you'll need to have Node.js and npm installe
 
 1.  Clone your fork of the repository:
     ```sh
-    git clone https://github.com/YOUR_USERNAME/APIQuiz.git
+    git clone https://github.com/TainYanTun/APIQ-interactive-quiz.git
     ```
 2.  Navigate to the project directory:
     ```sh
-    cd APIQuiz
+    cd APIQ-interactive-quiz
     ```
 3.  Install the dependencies:
     ```sh
