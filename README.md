@@ -20,6 +20,8 @@ APIQ is a comprehensive, real-time quiz platform designed for educators, trainer
 
 Built with cutting-edge web technologies, APIQ combines real-time WebSocket communication, robust backend architecture, and an intuitive user interface to create memorable learning experiences.
 
+Please take note that this is not a final version. The project has been migrated to - [derekforsure/project](https://github.com/derekforsure/APIQ-interactive-quiz) 
+
 ---
 
 ## ✨ Key Features
